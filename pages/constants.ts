@@ -1200,3 +1200,13 @@ export const data = [
       4,
     ],
   ];
+
+export const headers =[
+  "Company Name",
+  "Name",
+  "Sell date",
+  "In stock",
+  "Quantity",
+  "Order ID",
+  "Country",
+]

@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { AppProvider } from '@toolpad/core/nextjs';
 import { DashboardLayout } from '@toolpad/core/DashboardLayout';
-import { PageContainer } from '@toolpad/core/PageContainer';
 import Head from 'next/head';
 import { AppCacheProvider } from '@mui/material-nextjs/v14-pagesRouter';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -13,6 +12,8 @@ import { SessionProvider, signIn, signOut, useSession } from 'next-auth/react';
 import LinearProgress from '@mui/material/LinearProgress';
 import theme from '../theme';
 import CustomPageContainer from '@/components/CustomContainer';
+import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
+import TuneIcon from '@mui/icons-material/Tune';
 
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: React.ReactElement) => React.ReactNode;
@@ -34,20 +35,34 @@ const NAVIGATION: Navigation = [
     icon: <DashboardIcon />,
   },
   {
-    segment: 'orders',
-    title: 'Orders',
-    icon: <ShoppingCartIcon />,
+    segment: 'compare',
+    title: 'Compare',
+    icon: <CompareArrowsIcon />,
+  },
+  {
+    segment: 'filter',
+    title: 'Filter',
+    icon: <TuneIcon />,
   },
 ];
 
 const BRANDING = {
-  title: 'My Toolpad Core Next.js Pages App',
+  title: 'Công ty TNHH Một thành viên 76',
 };
 
 const AUTHENTICATION = {
   signIn,
   signOut,
 };
+
+
+interface DemoProps {
+  /**
+   * Injected by the documentation to work in an iframe.
+   * Remove this when copying and pasting into your project.
+   */
+  window?: () => Window;
+}
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { status } = useSession();
@@ -70,6 +85,7 @@ function getDefaultLayout(page: React.ReactElement) {
 }
 
 function AppLayout({ children }: { children: React.ReactNode }) {
+
   const { data: session } = useSession();
   return (
     <React.Fragment>
