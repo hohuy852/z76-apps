@@ -67,7 +67,7 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
 function getDefaultLayout(page: React.ReactElement) {
   return (
     <DashboardLayout>
-      <PageContainer maxWidth='lg'>{page}</PageContainer>
+        <PageContainer maxWidth='lg'>{page}</PageContainer>
     </DashboardLayout>
   );
 }
