@@ -11,8 +11,8 @@ import type { AppProps } from 'next/app';
 import type { Navigation } from '@toolpad/core/AppProvider';
 import { SessionProvider, signIn, signOut, useSession } from 'next-auth/react';
 import LinearProgress from '@mui/material/LinearProgress';
-
 import theme from '../theme';
+import CustomPageContainer from '@/components/CustomContainer';
 
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: React.ReactElement) => React.ReactNode;
@@ -44,7 +44,6 @@ const BRANDING = {
   title: 'My Toolpad Core Next.js Pages App',
 };
 
-
 const AUTHENTICATION = {
   signIn,
   signOut,
@@ -57,17 +56,15 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
     return <LinearProgress />;
   }
 
-  
-
-
   return children;
 }
-
 
 function getDefaultLayout(page: React.ReactElement) {
   return (
     <DashboardLayout>
-        <PageContainer maxWidth='lg'>{page}</PageContainer>
+      <CustomPageContainer>
+        {page}
+      </CustomPageContainer>
     </DashboardLayout>
   );
 }
