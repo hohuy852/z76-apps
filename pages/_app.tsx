@@ -44,6 +44,11 @@ const NAVIGATION: Navigation = [
     title: 'Filter',
     icon: <TuneIcon />,
   },
+  {
+    segment: 'collaboration',
+    title: 'Collaboration',
+    icon: <TuneIcon />,
+  },
 ];
 
 const BRANDING = {
