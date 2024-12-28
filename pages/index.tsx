@@ -6,7 +6,7 @@ import "handsontable/styles/ht-theme-main.css";
 
 // register Handsontable's modules
 registerAllModules();
-import { data, headers } from "./constants";
+import data from "../data/data.json"
 import { Grid2 } from "@mui/material";
 export default function HomePage() {
   return (
@@ -15,11 +15,11 @@ export default function HomePage() {
       </Grid2>
       <Grid2 size={12}>
         <HotTable
-          data={data}
+          data={data.data}
           autoColumnSize
           height="100%"
           width="100%"
-          colHeaders={headers}
+          colHeaders={data.headers}
           contextMenu={[
             "cut",
             "copy",

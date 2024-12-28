@@ -4,7 +4,7 @@ import { HotTable, HotColumn } from "@handsontable/react-wrapper";
 import { registerAllModules } from "handsontable/registry";
 import "handsontable/styles/handsontable.css";
 import "handsontable/styles/ht-theme-main.css";
-import { data, headers } from "../constants";
+import data from "../../data/data.json"
 import UploadButton from "@/components/UploadButton";
 
 // register Handsontable's modules
@@ -28,11 +28,11 @@ export default function OrdersPage() {
       </Grid2>
       <Grid2 size={6}>
         <HotTable
-          data={data}
+          data={data.data}
           autoColumnSize
           height="100%"
           width="100%"
-          colHeaders={headers}
+          colHeaders={data.headers}
           contextMenu={[
             "cut",
             "copy",
@@ -73,11 +73,11 @@ export default function OrdersPage() {
       </Grid2>
       <Grid2 size={6}>
         <HotTable
-          data={data}
+          data={data.data}
           autoColumnSize
           height="100%"
           width="100%"
-          colHeaders={headers}
+          colHeaders={data.headers}
           contextMenu={[
             "cut",
             "copy",
