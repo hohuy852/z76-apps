@@ -18,16 +18,17 @@ const VisuallyHiddenInput = styled('input')({
 interface InputFileUploadProps {
   content?: string;
   action: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  startIcon?: React.ReactNode;  // Optional prop for custom start icon
 }
 
-const InputFileUpload: React.FC<InputFileUploadProps> = ({ content, action }) => {
+const InputFileUpload: React.FC<InputFileUploadProps> = ({ content, action, startIcon }) => {
   return (
     <Button
       component="label"
       role={undefined}
       variant="contained"
       tabIndex={-1}
-      startIcon={<CloudUploadIcon />}
+      startIcon={startIcon || <CloudUploadIcon />}  
     >
       { content || 'Tải lên'}
       <VisuallyHiddenInput

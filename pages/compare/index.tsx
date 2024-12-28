@@ -1,33 +1,15 @@
 import * as React from "react";
 import { Button, Grid2, Stack } from "@mui/material";
-import { HotTable, HotColumn } from "@handsontable/react-wrapper";
+import { HotTable, HotColumn, HotTableRef } from "@handsontable/react-wrapper";
 import { registerAllModules } from "handsontable/registry";
 import "handsontable/styles/handsontable.css";
 import "handsontable/styles/ht-theme-main.css";
 import * as XLSX from "xlsx";
 import data from "../../data/data.json";
 import UploadButton from "@/components/UploadButton";
-
+import "./style.css"
 // register Handsontable's modules
 registerAllModules();
-
-interface SampleData {
-  booleanField: boolean;
-  companyName: string;
-  country: string;
-  productName: string;
-  date: string;
-  contactNumber: string;
-  anotherBooleanField: boolean;
-  value1: number;
-  value2: number;
-  value3: number;
-}
-
-interface DataProps {
-  data: (boolean | string | number)[][];
-  headers: string[];
-}
 
 const convertExcelToSampleData = (file: File): Promise<(string | number)[][]> => {
   return new Promise((resolve, reject) => {
@@ -75,11 +57,57 @@ export default function OrdersPage() {
       }
     }
   };
-  // Use useEffect to log the updated state of dataA
-  React.useEffect(() => {
-    console.log(dataA);
-  }, [dataA]);
+  const hotTableRef1 = React.useRef<HotTableRef>(null);
+  const hotTableRef2 = React.useRef<HotTableRef>(null);
 
+  React.useEffect(() => {
+    const table1Container = hotTableRef1.current?.hotInstance?.rootElement?.querySelector('.ht_master .wtHolder');
+    const table2Container = hotTableRef2.current?.hotInstance?.rootElement?.querySelector('.ht_master .wtHolder');
+
+    if (table1Container && table2Container) {
+      const syncScroll = (sourceTable: Element, targetTable: Element) => {
+        sourceTable.addEventListener('scroll', () => {
+          targetTable.scrollTop = sourceTable.scrollTop;
+          targetTable.scrollLeft = sourceTable.scrollLeft;
+        });
+      };
+
+      syncScroll(table1Container, table2Container);
+      syncScroll(table2Container, table1Container);
+    }
+  }, [hotTableRef1, hotTableRef2]);
+
+  const compareData = () => {
+    if (hotTableRef1.current && hotTableRef2.current) {
+      const table1 = hotTableRef1.current.hotInstance;
+      const table2 = hotTableRef2.current.hotInstance;
+
+      if (!table1 || !table2) return;
+
+      const data1 = table1.getData();
+      const data2 = table2.getData();
+      const maxRows = Math.max(data1.length, data2.length);
+      const maxCols = Math.max(data1[0].length, data2[0].length);
+
+      for (let row = 0; row < maxRows; row++) {
+        for (let col = 0; col < maxCols; col++) {
+          const value1 = data1[row] ? data1[row][col] : null;
+          const value2 = data2[row] ? data2[row][col] : null;
+
+          if (value1 !== value2) {
+            table1.setCellMeta(row, col, 'className', 'htCellDifference');
+            table2.setCellMeta(row, col, 'className', 'htCellDifference');
+          } else {
+            table1.setCellMeta(row, col, 'className', '');
+            table2.setCellMeta(row, col, 'className', '');
+          }
+        }
+      }
+
+      table1.render();
+      table2.render();
+    }
+  };
   return (
     <Grid2 container height="100%" spacing={2}>
       <Grid2 size={12}>
@@ -91,7 +119,7 @@ export default function OrdersPage() {
           }}
         >
           <UploadButton content="Upload A" action={handleUploadA} />
-          <Button variant="contained">Compare</Button>
+          <Button onClick={compareData} variant="contained">Compare</Button>
           <UploadButton content="Upload B" action={handleUploadB} />
         </Stack>
       </Grid2>
@@ -101,6 +129,7 @@ export default function OrdersPage() {
           colWidths={[203, 289, 150, 150, 150, 150, 150,150]}
           autoColumnSize
           height="100%"
+          ref={hotTableRef1}
           width="100%"
           colHeaders={data.headers2}
           contextMenu={[
@@ -130,7 +159,7 @@ export default function OrdersPage() {
           manualColumnResize={true}
           navigableHeaders={true}
           licenseKey="non-commercial-and-evaluation"
-          className="ht-theme-main-dark-auto" // Apply theme class here
+          className="ht-theme-main" // Apply theme class here
         >
           <HotColumn data={0} />
           <HotColumn data={1} />
@@ -145,6 +174,7 @@ export default function OrdersPage() {
       <Grid2 size={6}>
         <HotTable
           data={dataB}
+          ref={hotTableRef2}
           colWidths={[203, 289, 150, 150, 150, 150, 150,150]}
           height="100%"
           width="100%"
@@ -176,7 +206,7 @@ export default function OrdersPage() {
           manualColumnResize={true}
           navigableHeaders={true}
           licenseKey="non-commercial-and-evaluation"
-          className="ht-theme-main-dark-auto" // Apply theme class here
+          className="ht-theme-main" // Apply theme class here
         >
          <HotColumn data={0} />
           <HotColumn data={1} />
