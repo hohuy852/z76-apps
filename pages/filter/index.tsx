@@ -7,16 +7,35 @@ import "handsontable/styles/ht-theme-main.css";
 import * as XLSX from "xlsx";
 import UploadButton from "@/components/UploadButton";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
-import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
+import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
+import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import data from "../../data/data.json";
 
 // register Handsontable's modules
 registerAllModules();
 
 export default function FiltersPage() {
-  const FilterData = (
-    file: File
-  ): Promise<(string | number)[][]> => {
+  const hotRef = React.useRef<HotTableRef>(null);
+
+  const buttonClickCallback = () => {
+    const hot = hotRef.current?.hotInstance;
+    const exportPlugin = hot?.getPlugin("exportFile");
+
+    exportPlugin?.downloadFile("csv", {
+      bom: true, // This enables UTF-8 BOM
+      columnDelimiter: ",",
+      columnHeaders: false,
+      exportHiddenColumns: true,
+      exportHiddenRows: true,
+      fileExtension: "csv",
+      filename: "Handsontable-CSV-file_[YYYY]-[MM]-[DD]",
+      mimeType: "text/csv",
+      rowDelimiter: "\r\n",
+      rowHeaders: true,
+    });
+  };
+
+  const FilterData = (file: File): Promise<(string | number)[][]> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -27,7 +46,7 @@ export default function FiltersPage() {
         const jsonData = XLSX.utils.sheet_to_json<any[]>(worksheet, {
           header: 1,
         });
-  
+
         // Columns to keep: A, B, C, D, J, K, Q, V, W, X, AA, AB
         const columnsToKeep = [
           0, // A
@@ -43,19 +62,22 @@ export default function FiltersPage() {
           26, // AA
           27, // AB
         ];
-  
+
         // Format data: Only keep the specified columns, filter rows where column AA (index 26) has a value,
         // and exclude rows where column A is '2' or column AB contains 'huỷ'
-        const formattedData = jsonData.slice(1)
+        const formattedData = jsonData
+          .slice(1)
           .filter((row) => {
             // Keep rows where column AA (index 26) has a value and not empty or null
-            const isColumnAAValid = row[26] != null && row[26] !== '';
+            const isColumnAAValid = row[26] != null && row[26] !== "";
             // Exclude rows where column A is '2' or column AB contains 'huỷ'
-            const isValidRow = !(row[0] === 2 || row[27] === "Hóa đơn đã bị hủy");
+            const isValidRow = !(
+              row[0] === 2 || row[27] === "Hóa đơn đã bị hủy"
+            );
             return isColumnAAValid && isValidRow;
           })
           .map((row) => columnsToKeep.map((colIndex) => row[colIndex]));
-  
+
         resolve(formattedData);
       };
       reader.onerror = (error) => reject(error);
@@ -76,6 +98,17 @@ export default function FiltersPage() {
     }
   };
 
+  const handleTemplate = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      try {
+        const formattedData = await FilterData(file);
+        // Insert the formatted data into the selected file starting from row 19
+      } catch (error) {
+        console.error("Error uploading file A:", error);
+      }
+    }
+  };
   return (
     <Grid2 container height="100%" spacing={2}>
       <Grid2 size={12}>
@@ -85,22 +118,38 @@ export default function FiltersPage() {
             alignItems: "center",
           }}
         >
-          <UploadButton content="Filter" action={handleUpload} />
-          <Button startIcon={<LibraryBooksIcon/>} style={{margin:"0 20px"}} variant="contained">Template</Button>
-          <Button startIcon={<CloudDownloadIcon />} variant="contained">
+          <UploadButton
+            startIcon={<FilterAltIcon />}
+            content="Filter"
+            action={handleUpload}
+          />
+          <UploadButton
+            startIcon={<LibraryBooksIcon />}
+            style={{ margin: "0 20px" }}
+            content="Template"
+            action={handleTemplate}
+          />
+          <Button
+            startIcon={<CloudDownloadIcon />}
+            onClick={buttonClickCallback}
+            variant="contained"
+          >
             Download
           </Button>
         </Stack>
       </Grid2>
       <Grid2 size={12}>
         <HotTable
+          ref={hotRef}
           data={dataA}
           autoColumnSize
           className="ht-theme-main"
           height="100%"
           width="100%"
           colHeaders={data.header3}
-          colWidths={[181,132,165,135,174,600,158,600,125,197,121,193]}
+          colWidths={[
+            181, 132, 165, 135, 174, 600, 158, 600, 125, 197, 121, 193,
+          ]}
           contextMenu={[
             "cut",
             "copy",
