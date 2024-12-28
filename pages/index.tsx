@@ -47,7 +47,7 @@ export default function HomePage() {
           manualColumnResize={true}
           navigableHeaders={true}
           licenseKey="non-commercial-and-evaluation"
-          themeName="ht-theme-main-dark-auto"
+          className="ht-theme-main-dark-auto" 
         >
           <HotColumn data={1} />
           <HotColumn data={3} />

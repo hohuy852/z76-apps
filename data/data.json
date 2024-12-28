@@ -8,6 +8,16 @@
       "Order ID",
       "Country"
     ],
+    "headers2": [
+      "Mã hàng",
+      "Tên Vlsphh",
+      "Đv_đo",
+      "SL tồn đầu",
+      "SL nhập",
+      "SL xuất",
+      "SL tồn",
+      "Nợ"
+    ],
     "data": [
         [
           false,
