@@ -15,23 +15,69 @@ import data from "../../data/data.json";
 registerAllModules();
 
 export default function FiltersPage() {
-  const hotRef = React.useRef<HotTableRef>(null);
 
-  const buttonClickCallback = () => {
-    const hot = hotRef.current?.hotInstance;
-    const exportPlugin = hot?.getPlugin("exportFile");
-
-    exportPlugin?.downloadFile("csv", {
-      bom: true, // This enables UTF-8 BOM
-      columnDelimiter: ",",
-      columnHeaders: false,
-      exportHiddenColumns: true,
-      exportHiddenRows: true,
-      fileExtension: "csv",
-      filename: "Handsontable-CSV-file_[YYYY]-[MM]-[DD]",
-      mimeType: "text/csv",
-      rowDelimiter: "\r\n",
-      rowHeaders: true,
+  const insertFormattedDataIntoExcel = (
+    formattedData: (boolean | string | number)[][],
+    selectedFile: File
+  ): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+  
+      reader.onload = (e) => {
+        const data = new Uint8Array(e.target!.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: "array" });
+  
+        // Get the first sheet (or choose another sheet if necessary)
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+  
+        // Preserve merged cells
+        const merges = worksheet['!merges'];
+  
+        // Get the starting row (row 19 means index 18 since row index starts at 0)
+        const startRow = 18;
+  
+        // Read existing data below the start row
+        const existingDataBelow = XLSX.utils.sheet_to_json(worksheet, { header: 1, range: startRow });
+  
+        // Create a new array to hold combined data
+        const combinedData = [...Array(startRow)].concat(formattedData);
+  
+        // Add existing data below start row to the combined data array
+        for (let i = 0; i < existingDataBelow.length; i++) {
+          combinedData[startRow + formattedData.length + i] = existingDataBelow[i];
+        }
+  
+        // Add combined data to the worksheet
+        XLSX.utils.sheet_add_aoa(worksheet, combinedData, { origin: { r: 0, c: 0 } });
+  
+        // Copy the merged cells from the original worksheet to the updated worksheet
+        if (merges) {
+          worksheet['!merges'] = merges;
+        }
+  
+        // Write the updated workbook back to a binary string
+        const updatedExcelData = XLSX.write(workbook, {
+          bookType: "xlsx",
+          type: "array",
+        });
+  
+        // Create a Blob from the updated Excel data and trigger download
+        const blob = new Blob([updatedExcelData], { type: "application/octet-stream" });
+        const url = URL.createObjectURL(blob);
+  
+        // Create a download link and trigger the download
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = selectedFile.name;  // Use the original file name for the downloaded file
+        link.click();
+  
+        resolve();
+      };
+  
+      reader.onerror = (error) => reject(error);
+  
+      reader.readAsArrayBuffer(selectedFile);
     });
   };
 
@@ -103,6 +149,7 @@ export default function FiltersPage() {
     if (file) {
       try {
         const formattedData = await FilterData(file);
+        insertFormattedDataIntoExcel(dataA, file)
         // Insert the formatted data into the selected file starting from row 19
       } catch (error) {
         console.error("Error uploading file A:", error);
@@ -129,18 +176,13 @@ export default function FiltersPage() {
             content="Template"
             action={handleTemplate}
           />
-          <Button
-            startIcon={<CloudDownloadIcon />}
-            onClick={buttonClickCallback}
-            variant="contained"
-          >
+          <Button startIcon={<CloudDownloadIcon />} variant="contained">
             Download
           </Button>
         </Stack>
       </Grid2>
       <Grid2 size={12}>
         <HotTable
-          ref={hotRef}
           data={dataA}
           autoColumnSize
           className="ht-theme-main"
