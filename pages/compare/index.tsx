@@ -7,6 +7,8 @@ import "handsontable/styles/ht-theme-main.css";
 import * as XLSX from "xlsx";
 import data from "../../data/data.json";
 import UploadButton from "@/components/UploadButton";
+import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
+
 import "./style.css"
 // register Handsontable's modules
 registerAllModules();
@@ -118,9 +120,9 @@ export default function OrdersPage() {
             alignItems: "center",
           }}
         >
-          <UploadButton content="Upload A" action={handleUploadA} />
-          <Button onClick={compareData} variant="contained">Compare</Button>
-          <UploadButton content="Upload B" action={handleUploadB} />
+          <UploadButton content="Kho A" action={handleUploadA} />
+          <Button startIcon={<CompareArrowsIcon/>} onClick={compareData} variant="contained">Đối chiếu</Button>
+          <UploadButton content="Kho B" action={handleUploadB} />
         </Stack>
       </Grid2>
       <Grid2 size={6}>
