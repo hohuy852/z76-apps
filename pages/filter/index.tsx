@@ -16,71 +16,6 @@ registerAllModules();
 
 export default function FiltersPage() {
 
-  const insertFormattedDataIntoExcel = (
-    formattedData: (boolean | string | number)[][],
-    selectedFile: File
-  ): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-  
-      reader.onload = (e) => {
-        const data = new Uint8Array(e.target!.result as ArrayBuffer);
-        const workbook = XLSX.read(data, { type: "array" });
-  
-        // Get the first sheet (or choose another sheet if necessary)
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-  
-        // Preserve merged cells
-        const merges = worksheet['!merges'];
-  
-        // Get the starting row (row 19 means index 18 since row index starts at 0)
-        const startRow = 18;
-  
-        // Read existing data below the start row
-        const existingDataBelow = XLSX.utils.sheet_to_json(worksheet, { header: 1, range: startRow });
-  
-        // Create a new array to hold combined data
-        const combinedData = [...Array(startRow)].concat(formattedData);
-  
-        // Add existing data below start row to the combined data array
-        for (let i = 0; i < existingDataBelow.length; i++) {
-          combinedData[startRow + formattedData.length + i] = existingDataBelow[i];
-        }
-  
-        // Add combined data to the worksheet
-        XLSX.utils.sheet_add_aoa(worksheet, combinedData, { origin: { r: 0, c: 0 } });
-  
-        // Copy the merged cells from the original worksheet to the updated worksheet
-        if (merges) {
-          worksheet['!merges'] = merges;
-        }
-  
-        // Write the updated workbook back to a binary string
-        const updatedExcelData = XLSX.write(workbook, {
-          bookType: "xlsx",
-          type: "array",
-        });
-  
-        // Create a Blob from the updated Excel data and trigger download
-        const blob = new Blob([updatedExcelData], { type: "application/octet-stream" });
-        const url = URL.createObjectURL(blob);
-  
-        // Create a download link and trigger the download
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = selectedFile.name;  // Use the original file name for the downloaded file
-        link.click();
-  
-        resolve();
-      };
-  
-      reader.onerror = (error) => reject(error);
-  
-      reader.readAsArrayBuffer(selectedFile);
-    });
-  };
-
   const FilterData = (file: File): Promise<(string | number)[][]> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -93,7 +28,7 @@ export default function FiltersPage() {
           header: 1,
         });
 
-        // Columns to keep: A, B, C, D, J, K, Q, V, W, X, AA, AB
+        // Columns to keep: A, B, C, D, J, K, Q, R, S, T, V, W, X, AA, AB
         const columnsToKeep = [
           0, // A
           1, // B
@@ -102,6 +37,9 @@ export default function FiltersPage() {
           9, // J
           10, // K
           16, // Q
+          17, // R
+          18, // S
+          19, // T
           21, // V
           22, // W
           23, // X
@@ -144,17 +82,9 @@ export default function FiltersPage() {
     }
   };
 
-  const handleTemplate = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      try {
-        const formattedData = await FilterData(file);
-        insertFormattedDataIntoExcel(dataA, file)
-        // Insert the formatted data into the selected file starting from row 19
-      } catch (error) {
-        console.error("Error uploading file A:", error);
-      }
-    }
+  const handleTemplate =() => {
+    const updatedData = dataA.map(item => item.slice(0, -2));
+    console.log(updatedData);
   };
   return (
     <Grid2 container height="100%" spacing={2}>
@@ -167,17 +97,11 @@ export default function FiltersPage() {
         >
           <UploadButton
             startIcon={<FilterAltIcon />}
-            content="Filter"
+            content="Xử lý dữ liệu"
             action={handleUpload}
           />
-          <UploadButton
-            startIcon={<LibraryBooksIcon />}
-            style={{ margin: "0 20px" }}
-            content="Template"
-            action={handleTemplate}
-          />
-          <Button startIcon={<CloudDownloadIcon />} variant="contained">
-            Download
+          <Button  style={{ margin: "0 0 0 20px" }} onClick={handleTemplate} startIcon={<CloudDownloadIcon />} variant="contained">
+            Nhập vào template
           </Button>
         </Stack>
       </Grid2>
@@ -190,7 +114,8 @@ export default function FiltersPage() {
           width="100%"
           colHeaders={data.header3}
           colWidths={[
-            181, 132, 165, 135, 174, 600, 158, 600, 125, 197, 121, 193,
+            181, 132, 165, 135, 174, 600, 158, 600, 125, 125, 125, 197, 197,
+            121, 193,
           ]}
           contextMenu={[
             "cut",
@@ -220,7 +145,7 @@ export default function FiltersPage() {
           navigableHeaders={true}
           licenseKey="non-commercial-and-evaluation"
         >
-          <HotColumn data={11} />
+          <HotColumn data={14} />
           <HotColumn data={0} />
           <HotColumn data={1} />
           <HotColumn data={2} />
@@ -232,6 +157,9 @@ export default function FiltersPage() {
           <HotColumn data={8} />
           <HotColumn data={9} />
           <HotColumn data={10} />
+          <HotColumn data={11} />
+          <HotColumn data={12} />
+          <HotColumn data={13} />
         </HotTable>
       </Grid2>
     </Grid2>

@@ -36,19 +36,19 @@ const NAVIGATION: Navigation = [
   },
   {
     segment: 'compare',
-    title: 'Compare',
+    title: 'Đối chiếu thẻ kho',
     icon: <CompareArrowsIcon />,
   },
   {
     segment: 'filter',
-    title: 'Filter',
+    title: 'Bảng kê hoàn thuế',
     icon: <TuneIcon />,
   },
-  {
-    segment: 'collaboration',
-    title: 'Collaboration',
-    icon: <CardTravelIcon />,
-  },
+  // {
+  //   segment: 'collaboration',
+  //   title: 'Collaboration',
+  //   icon: <CardTravelIcon />,
+  // },
 ];
 
 const BRANDING = {
