@@ -1,22 +1,39 @@
 import NextAuth from 'next-auth';
-import Google from 'next-auth/providers/google';
+import CredentialsProvider from 'next-auth/providers/credentials';
 import type { Provider } from 'next-auth/providers';
-
+import axios from 'axios';
 
 const providers: Provider[] = [
-  Google({
-    clientId: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  CredentialsProvider({
+    name: 'Credentials',
+    credentials: {
+      email: { label: '123', type: 'text', placeholder: 'your@email.com' },
+      password: { label: '123', type: 'password' },
+    },
+    async authorize(credentials) {
+      try {
+        // Send credentials to your API
+        const response = await axios.post('https://k02nwn2ep7.execute-api.ap-northeast-1.amazonaws.com/dev/login/', {
+          email: credentials?.email,
+          password: credentials?.password,
+        });
+
+        const user = response.data;
+
+        // If login is successful, return user object
+        if (user) {
+          return user;
+        }
+
+        // If login fails, return null
+        return null;
+      } catch (error) {
+        console.error('Login failed:', error);
+        return null;
+      }
+    },
   }),
 ];
-
-if(!process.env.GOOGLE_CLIENT_ID) { 
-  console.warn('Missing environment variable "GOOGLE_CLIENT_ID"');
-}
-if(!process.env.GOOGLE_CLIENT_SECRET) {
-  console.warn('Missing environment variable "GOOGLE_CLIENT_SECRET"');
-}
-
 
 export const providerMap = providers.map((provider) => {
   if (typeof provider === 'function') {
@@ -34,20 +51,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   callbacks: {
     authorized({ auth: session, request: { nextUrl } }) {
-      return true; // Temporarily disable authentication
+      const isLoggedIn = !!session?.user;
+      const isPublicPage = nextUrl.pathname.startsWith('/public');
+
+      if (isPublicPage || isLoggedIn) {
+        return true;
+      }
+
+      return false;
+    },
+    async jwt({ token, user }) {
+      if (user) {
+        token.user = user;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      session.user = token.user as any;
+      return session;
     },
   },
-  // callbacks: {
-  //   authorized({ auth: session, request: { nextUrl } }) {
-  //     const isLoggedIn = !!session?.user;
-  //     const isPublicPage = nextUrl.pathname.startsWith('/public');
-
-  //     if (isPublicPage || isLoggedIn) {
-  //       return true;
-  //     }
-
-  //     return false; // Redirect unauthenticated users to login page
-  //   },
-  // },
 });
-  

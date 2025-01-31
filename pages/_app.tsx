@@ -31,7 +31,7 @@ const NAVIGATION: Navigation = [
   },
   {
     segment: '',
-    title: 'Dashboard',
+    title: 'Tổng quan',
     icon: <DashboardIcon />,
   },
   {
