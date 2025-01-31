@@ -51,7 +51,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   callbacks: {
     async authorized({ auth: session, request: { nextUrl } }) {
-      console.log("Authorized check:", { session, nextUrl });
   
       const isLoggedIn = !!session?.user;
       const isPublicPage = nextUrl.pathname.startsWith('/public');
@@ -60,7 +59,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return true;
       }
   
-      return false; // Redirect only if absolutely necessary
+      return false; 
     },
   },
   
