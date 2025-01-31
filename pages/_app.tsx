@@ -46,7 +46,7 @@ const NAVIGATION: Navigation = [
   },
   // {
   //   segment: 'collaboration',
-  //   title: 'Collaboration',
+  //   title: 'Collaboration',≈
   //   icon: <CardTravelIcon />,
   // },
 ];
