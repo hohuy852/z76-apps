@@ -50,25 +50,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     signIn: '/auth/signin',
   },
   callbacks: {
-    authorized({ auth: session, request: { nextUrl } }) {
+    async authorized({ auth: session, request: { nextUrl } }) {
+      console.log("Authorized check:", { session, nextUrl });
+  
       const isLoggedIn = !!session?.user;
       const isPublicPage = nextUrl.pathname.startsWith('/public');
-
-      if (isPublicPage || isLoggedIn) {
+  
+      if (isLoggedIn || isPublicPage) {
         return true;
       }
-
-      return false;
-    },
-    async jwt({ token, user }) {
-      if (user) {
-        token.user = user;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      session.user = token.user as any;
-      return session;
+  
+      return false; // Redirect only if absolutely necessary
     },
   },
+  
 });
