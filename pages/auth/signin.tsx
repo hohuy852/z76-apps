@@ -53,9 +53,9 @@ SignIn.requireAuth = false;
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const session = await auth(context);
 
-  if (session) {
-    return { redirect: { destination: '/' } };
-  }
+  // if (session) {
+  //   return { redirect: { destination: '/' } };
+  // }
 
   return {
     props: {

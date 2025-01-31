@@ -21,7 +21,7 @@ const providers: Provider[] = [
         const user = response.data;
 
         // If login is successful, return user object
-        if (user) {
+        if (user) { 
           return user;
         }
 
