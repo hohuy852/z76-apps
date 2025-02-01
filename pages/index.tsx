@@ -17,7 +17,7 @@ export default function HomePage() {
   return (
     <div>
       <Head>
-        <title>Trang chủ</title>
+        <title>Tổng quan</title>
       </Head>
       <Grid2 container width="100%" spacing={2}>
         <Grid2 size={3}>
