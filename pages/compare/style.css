@@ -1,3 +1,13 @@
 .htCellDifference {
-    background-color: #eb837c !important;
-  }
+  background-color: #eb837c !important;
+}
+.scroll-diff-container {
+  position: relative;
+  width: 30px;
+}
+.error-marker {
+  position: absolute;
+  width: 100%;
+  height: 1px;
+  background-color: #eb837c 
+}
