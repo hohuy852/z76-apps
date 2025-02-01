@@ -9,8 +9,8 @@ import data from "../../data/data.json";
 import UploadButton from "@/components/UploadButton";
 import CompareArrowsIcon from "@mui/icons-material/CompareArrows";
 import Switch from "@mui/material/Switch";
-import FormGroup from '@mui/material/FormGroup';
-import FormControlLabel from '@mui/material/FormControlLabel';
+import FormGroup from "@mui/material/FormGroup";
+import FormControlLabel from "@mui/material/FormControlLabel";
 
 import "./style.css";
 // register Handsontable's modules
@@ -43,11 +43,35 @@ const convertExcelToSampleData = (
 export default function OrdersPage() {
   const [dataA, setDataA] = React.useState<(boolean | string | number)[][]>([]);
   const [dataB, setDataB] = React.useState<(boolean | string | number)[][]>([]);
-  const [hideIdenticalRows, setHideIdenticalRows] = React.useState<boolean>(false);
+  const [hideIdenticalRows, setHideIdenticalRows] =
+    React.useState<boolean>(false);
+  const resetTable = (tableRef: React.RefObject<HotTableRef>) => {
+    if (tableRef.current) {
+      const table = tableRef.current.hotInstance;
+      if (table) {
+        table.clear(); // Xóa tất cả dữ liệu
+        table.updateSettings({
+          hiddenRows: {
+            rows: [],
+            indicators: false,
+          },
+        });
+
+        // Xóa tất cả các class đánh dấu sự khác biệt
+        table.getCellsMeta().forEach((cell) => {
+          table.setCellMeta(cell.row, cell.col, "className", "");
+        });
+
+        table.render();
+      }
+    }
+  };
+
   const handleUploadA = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       try {
+        resetTable(hotTableRef1); // Reset bảng trước khi nhập dữ liệu mới
         const formattedData = await convertExcelToSampleData(file);
         setDataA(formattedData);
       } catch (error) {
@@ -55,19 +79,22 @@ export default function OrdersPage() {
       }
     }
   };
-  const handleSwitchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setHideIdenticalRows(event.target.checked);
-  };
+
   const handleUploadB = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       try {
+        resetTable(hotTableRef2); // Reset bảng trước khi nhập dữ liệu mới
         const formattedData = await convertExcelToSampleData(file);
         setDataB(formattedData);
       } catch (error) {
-        console.error("Error uploading file A:", error);
+        console.error("Error uploading file B:", error);
       }
     }
+  };
+
+  const handleSwitchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setHideIdenticalRows(event.target.checked);
   };
   const hotTableRef1 = React.useRef<HotTableRef>(null);
   const hotTableRef2 = React.useRef<HotTableRef>(null);
@@ -132,7 +159,6 @@ export default function OrdersPage() {
 
       table1.render();
       table2.render();
-    
     }
   };
   React.useEffect(() => {
@@ -145,7 +171,7 @@ export default function OrdersPage() {
       const data1 = table1.getData();
       const data2 = table2.getData();
       const maxRows = Math.max(data1.length, data2.length);
-      
+
       const differences: number[] = [];
       for (let row = 0; row < maxRows; row++) {
         for (let col = 0; col < data1[0].length; col++) {
@@ -163,30 +189,34 @@ export default function OrdersPage() {
       if (hideIdenticalRows) {
         table1.updateSettings({
           hiddenRows: {
-            rows: Array.from({ length: data1.length }, (_, i) => i).filter(i => !differences.includes(i)),
+            rows: Array.from({ length: data1.length }, (_, i) => i).filter(
+              (i) => !differences.includes(i)
+            ),
             indicators: false,
-          }
+          },
         });
 
         table2.updateSettings({
           hiddenRows: {
-            rows: Array.from({ length: data2.length }, (_, i) => i).filter(i => !differences.includes(i)),
+            rows: Array.from({ length: data2.length }, (_, i) => i).filter(
+              (i) => !differences.includes(i)
+            ),
             indicators: false,
-          }
+          },
         });
       } else {
         table1.updateSettings({
           hiddenRows: {
             rows: [],
             indicators: false,
-          }
+          },
         });
 
         table2.updateSettings({
           hiddenRows: {
             rows: [],
             indicators: false,
-          }
+          },
         });
       }
     }
@@ -213,9 +243,14 @@ export default function OrdersPage() {
         </Stack>
       </Grid2>
       <Grid2 size={12}>
-        <FormGroup>
-        <FormControlLabel
-            control={<Switch checked={hideIdenticalRows} onChange={handleSwitchChange} />}
+        <FormGroup style={{width: "fit-content"}}>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={hideIdenticalRows}
+                onChange={handleSwitchChange}
+              />
+            }
             label="Ẩn các hàng giống nhau"
           />
         </FormGroup>
@@ -256,7 +291,6 @@ export default function OrdersPage() {
             manualRowResize={true}
             manualColumnResize={true}
             navigableHeaders={true}
-            
             licenseKey="non-commercial-and-evaluation"
             className="ht-theme-main" // Apply theme class here
           >
