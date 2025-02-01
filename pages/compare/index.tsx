@@ -11,6 +11,7 @@ import CompareArrowsIcon from "@mui/icons-material/CompareArrows";
 import Switch from "@mui/material/Switch";
 import FormGroup from "@mui/material/FormGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
+import Head from "next/head";
 
 import "./style.css";
 // register Handsontable's modules
@@ -222,137 +223,146 @@ export default function OrdersPage() {
     }
   }, [hideIdenticalRows, dataA, dataB]);
   return (
-    <Grid2 container height="100%" spacing={2}>
-      <Grid2 size={12}>
-        <Stack
-          direction="row"
-          sx={{
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <UploadButton content="Kho A" action={handleUploadA} />
-          <Button
-            startIcon={<CompareArrowsIcon />}
-            onClick={compareData}
-            variant="contained"
-          >
-            Đối chiếu
-          </Button>
-          <UploadButton content="Kho B" action={handleUploadB} />
-        </Stack>
-      </Grid2>
-      <Grid2 size={12}>
-        <FormGroup style={{width: "fit-content"}}>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={hideIdenticalRows}
-                onChange={handleSwitchChange}
-              />
-            }
-            label="Ẩn các hàng giống nhau"
-          />
-        </FormGroup>
-      </Grid2>
-      <Grid2 container size={12}>
-        <Grid2 size="grow">
-          <HotTable
-            data={dataA}
-            colWidths={[203, 289, 150, 150, 150, 150, 150, 150]}
-            autoColumnSize
-            height="100%"
-            ref={hotTableRef1}
-            width="100%"
-            colHeaders={data.headers2}
-            contextMenu={[
-              "cut",
-              "copy",
-              "---------",
-              "row_above",
-              "row_below",
-              "remove_row",
-              "---------",
-              "alignment",
-              "make_read_only",
-              "clear_column",
-            ]}
-            dropdownMenu={true}
-            hiddenColumns={{
-              indicators: true,
+    <>
+      <Head>
+        <title>Đối chiếu thẻ kho</title>
+        <meta
+          name="description"
+          content="Compare and analyze orders efficiently"
+        />
+      </Head>
+      <Grid2 container height="100%" spacing={2}>
+        <Grid2 size={12}>
+          <Stack
+            direction="row"
+            sx={{
+              justifyContent: "space-between",
+              alignItems: "center",
             }}
-            multiColumnSorting={true}
-            filters={true}
-            rowHeaders={true}
-            headerClassName="htLeft"
-            manualRowMove={true}
-            autoWrapRow={true}
-            autoWrapCol={true}
-            manualRowResize={true}
-            manualColumnResize={true}
-            navigableHeaders={true}
-            licenseKey="non-commercial-and-evaluation"
-            className="ht-theme-main" // Apply theme class here
           >
-            <HotColumn data={0} />
-            <HotColumn data={1} />
-            <HotColumn data={2} />
-            <HotColumn data={3} />
-            <HotColumn data={4} />
-            <HotColumn data={5} />
-            <HotColumn data={6} />
-            <HotColumn data={7} />
-          </HotTable>
+            <UploadButton content="Kho A" action={handleUploadA} />
+            <Button
+              startIcon={<CompareArrowsIcon />}
+              onClick={compareData}
+              variant="contained"
+            >
+              Đối chiếu
+            </Button>
+            <UploadButton content="Kho B" action={handleUploadB} />
+          </Stack>
         </Grid2>
-        <Grid2 size="grow">
-          <HotTable
-            data={dataB}
-            ref={hotTableRef2}
-            colWidths={[203, 289, 150, 150, 150, 150, 150, 150]}
-            height="100%"
-            width="100%"
-            colHeaders={data.headers2}
-            contextMenu={[
-              "cut",
-              "copy",
-              "---------",
-              "row_above",
-              "row_below",
-              "remove_row",
-              "---------",
-              "alignment",
-              "make_read_only",
-              "clear_column",
-            ]}
-            dropdownMenu={true}
-            hiddenColumns={{
-              indicators: true,
-            }}
-            multiColumnSorting={true}
-            filters={true}
-            rowHeaders={true}
-            headerClassName="htLeft"
-            manualRowMove={true}
-            autoWrapRow={true}
-            autoWrapCol={true}
-            manualRowResize={true}
-            manualColumnResize={true}
-            navigableHeaders={true}
-            licenseKey="non-commercial-and-evaluation"
-            className="ht-theme-main" // Apply theme class here
-          >
-            <HotColumn data={0} />
-            <HotColumn data={1} />
-            <HotColumn data={2} />
-            <HotColumn data={3} />
-            <HotColumn data={4} />
-            <HotColumn data={5} />
-            <HotColumn data={6} />
-            <HotColumn data={7} />
-          </HotTable>
+        <Grid2 size={12}>
+          <FormGroup style={{ width: "fit-content" }}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={hideIdenticalRows}
+                  onChange={handleSwitchChange}
+                />
+              }
+              label="Ẩn các hàng giống nhau"
+            />
+          </FormGroup>
+        </Grid2>
+        <Grid2 container size={12}>
+          <Grid2 size="grow">
+            <HotTable
+              data={dataA}
+              colWidths={[203, 289, 150, 150, 150, 150, 150, 150]}
+              autoColumnSize
+              height="100%"
+              ref={hotTableRef1}
+              width="100%"
+              colHeaders={data.headers2}
+              contextMenu={[
+                "cut",
+                "copy",
+                "---------",
+                "row_above",
+                "row_below",
+                "remove_row",
+                "---------",
+                "alignment",
+                "make_read_only",
+                "clear_column",
+              ]}
+              dropdownMenu={true}
+              hiddenColumns={{
+                indicators: true,
+              }}
+              multiColumnSorting={true}
+              filters={true}
+              rowHeaders={true}
+              headerClassName="htLeft"
+              manualRowMove={true}
+              autoWrapRow={true}
+              autoWrapCol={true}
+              manualRowResize={true}
+              manualColumnResize={true}
+              navigableHeaders={true}
+              licenseKey="non-commercial-and-evaluation"
+              className="ht-theme-main" // Apply theme class here
+            >
+              <HotColumn data={0} />
+              <HotColumn data={1} />
+              <HotColumn data={2} />
+              <HotColumn data={3} />
+              <HotColumn data={4} />
+              <HotColumn data={5} />
+              <HotColumn data={6} />
+              <HotColumn data={7} />
+            </HotTable>
+          </Grid2>
+          <Grid2 size="grow">
+            <HotTable
+              data={dataB}
+              ref={hotTableRef2}
+              colWidths={[203, 289, 150, 150, 150, 150, 150, 150]}
+              height="100%"
+              width="100%"
+              colHeaders={data.headers2}
+              contextMenu={[
+                "cut",
+                "copy",
+                "---------",
+                "row_above",
+                "row_below",
+                "remove_row",
+                "---------",
+                "alignment",
+                "make_read_only",
+                "clear_column",
+              ]}
+              dropdownMenu={true}
+              hiddenColumns={{
+                indicators: true,
+              }}
+              multiColumnSorting={true}
+              filters={true}
+              rowHeaders={true}
+              headerClassName="htLeft"
+              manualRowMove={true}
+              autoWrapRow={true}
+              autoWrapCol={true}
+              manualRowResize={true}
+              manualColumnResize={true}
+              navigableHeaders={true}
+              licenseKey="non-commercial-and-evaluation"
+              className="ht-theme-main" // Apply theme class here
+            >
+              <HotColumn data={0} />
+              <HotColumn data={1} />
+              <HotColumn data={2} />
+              <HotColumn data={3} />
+              <HotColumn data={4} />
+              <HotColumn data={5} />
+              <HotColumn data={6} />
+              <HotColumn data={7} />
+            </HotTable>
+          </Grid2>
         </Grid2>
       </Grid2>
-    </Grid2>
+    </>
   );
 }
 

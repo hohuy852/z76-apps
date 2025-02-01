@@ -11,9 +11,14 @@ import data from "../data/data.json";
 import { Grid2 } from "@mui/material";
 import CustomCard from "@/components/Card";
 import CustomChart from "@/components/Chart";
+import Head from "next/head";
+
 export default function HomePage() {
   return (
     <div>
+      <Head>
+        <title>Trang chủ</title>
+      </Head>
       <Grid2 container width="100%" spacing={2}>
         <Grid2 size={3}>
           <CustomCard
