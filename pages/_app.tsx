@@ -14,6 +14,7 @@ import theme from '../theme';
 import CustomPageContainer from '@/components/CustomContainer';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import TuneIcon from '@mui/icons-material/Tune';
+import GroupIcon from '@mui/icons-material/Group';
 import CardTravelIcon from '@mui/icons-material/CardTravel';
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: React.ReactElement) => React.ReactNode;
@@ -47,7 +48,12 @@ const NAVIGATION: Navigation = [
   {
     segment: 'export-declaration',
     title: 'Tờ khai hải quan',
-    icon: <TuneIcon />,
+    icon: <TuneIcon />
+  },
+  {
+    segment: 'users',
+    title: 'Người dùng',
+    icon: <GroupIcon />,
   },
   // {
   //   segment: 'collaboration',
