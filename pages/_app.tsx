@@ -44,6 +44,11 @@ const NAVIGATION: Navigation = [
     title: 'Bảng kê hoàn thuế',
     icon: <TuneIcon />,
   },
+  {
+    segment: 'users',
+    title: 'Người dùng',
+    icon: <TuneIcon />,
+  },
   // {
   //   segment: 'collaboration',
   //   title: 'Collaboration',≈
