@@ -17,67 +17,41 @@ import TextField from "@mui/material/TextField";
 import MenuItem from "@mui/material/MenuItem";
 import Button from "@mui/material/Button";
 import Head from "next/head";
-
+import Autocomplete from '@mui/material/Autocomplete';
 function createData(
   id: number,
-  fullname: string,
-  email: string,
-  phone: string,
-  username: string,
   position: string,
   department: string,
   status: string,
-  permission: string
 
 ) {
-  return { id, fullname, email, phone, username, position, department, status, permission };
+  return { id, position, department, status };
 }
 
 const initialRows = [
   createData(
     1,
-    "Nguyễn Văn A",
-    "a@a.a",    
-    "0987654321",
-    "anguyenvan",
     "Kế toán viên",
     "Phòng kế toán",
     "Active",
-    "Đã cấp 3 quyền"
   ),
   createData(
     2,
-    "Nguyễn Văn B",
-    "b@b.b",
-    "0123456789",
-    "bnguyenvan",
     "Kế toán viên",
     "Phòng kế toán",
     "Inactive",
-    "Đã cấp 3 quyền"
   ),
   createData(
     3,
-    "Nguyễn Văn C",
-    "c@c.c",
-    "0976543210",
-    "cnguyenvan",
     "Kế toán viên",
     "Phòng kế toán",
     "Pending",
-    "Đã cấp 3 quyền"
-
   ),
   createData(
     4,
-    "Nguyễn Văn C",
-    "c@c.c",
-    "0976543210",
-    "cnguyenvan",
     "Kế toán viên",
     "Phòng kế toán",
     "Pending",
-    "Đã cấp 3 quyền"
   ),
 ];
 
@@ -110,17 +84,13 @@ export default function BasicTable() {
   return (
     <>
       <Head>
-        <title>Người dùng</title>
+        <title>Quản lý truy cập</title>
       </Head>
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
             <TableRow>
-              <TableCell>Họ và Tên</TableCell>
-              <TableCell align="center">Email</TableCell>
-              <TableCell align="center">Số điện thoại</TableCell>
-              <TableCell align="center">Username</TableCell>
-              <TableCell align="center">Chức vụ</TableCell>
+              <TableCell align="left">Chức vụ</TableCell>
               <TableCell align="center">Phòng ban</TableCell>
               <TableCell align="center">Trạng thái</TableCell>
               <TableCell align="center">Hành động</TableCell>
@@ -129,13 +99,7 @@ export default function BasicTable() {
           <TableBody>
             {rows.map((row) => (
               <TableRow key={row.id}>
-                <TableCell component="th" scope="row">
-                  {row.fullname}
-                </TableCell>
-                <TableCell align="center">{row.email}</TableCell>
-                <TableCell align="center">{row.phone}</TableCell>
-                <TableCell align="center">{row.username}</TableCell>
-                <TableCell align="center">{row.position}</TableCell>
+                <TableCell align="left">{row.position}</TableCell>
                 <TableCell align="center">{row.department}</TableCell>
                 <TableCell align="center">
                   <Chip
@@ -192,38 +156,20 @@ export default function BasicTable() {
               <>
                 <TextField
                   fullWidth
-                  label="Họ và Tên"
-                  margin="dense"
-                  value={selectedRow.fullname}
-                  onChange={(e) =>
-                    setSelectedRow({ ...selectedRow, fullname: e.target.value })
-                  }
-                />
-                <TextField
-                  fullWidth
-                  label="Email"
-                  margin="dense"
-                  value={selectedRow.email}
-                  onChange={(e) =>
-                    setSelectedRow({ ...selectedRow, email: e.target.value })
-                  }
-                />
-                <TextField
-                  fullWidth
-                  label="Số điện thoại"
-                  margin="dense"
-                  value={selectedRow.phone}
-                  onChange={(e) =>
-                    setSelectedRow({ ...selectedRow, phone: e.target.value })
-                  }
-                />
-                <TextField
-                  fullWidth
                   label="Chức vụ"
                   margin="dense"
                   value={selectedRow.position}
                   onChange={(e) =>
                     setSelectedRow({ ...selectedRow, position: e.target.value })
+                  }
+                />
+                <TextField
+                  fullWidth
+                  label="Phòng ban"
+                  margin="dense"
+                  value={selectedRow.department}
+                  onChange={(e) =>
+                    setSelectedRow({ ...selectedRow, department: e.target.value })
                   }
                 />
                 <TextField
@@ -242,6 +188,11 @@ export default function BasicTable() {
                     </MenuItem>
                   ))}
                 </TextField>
+                <Autocomplete
+                    disablePortal
+                    options={[{label: "Đối chiếu thẻ kho"}, {label: "Bảng kê hoàn thuế"}]}
+                    renderInput={(params) => <TextField {...params} label="Chức năng" />}
+                    />
                 <Stack
                   direction="row"
                   spacing={2}

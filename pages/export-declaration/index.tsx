@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import "./style.css";
 import { useRouter, usePathname } from "next/navigation";
@@ -18,7 +16,6 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Pagination from "@/components/Pagination/Pagination";
 import type { SelectChangeEvent } from "@mui/material";
 import Cookies from "js-cookie";
-import { SaveIcon } from "lucide-react";
 import dataToKhaiFake from "@/data/export-declaration";
 import { Autocomplete, TextField, Button } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";

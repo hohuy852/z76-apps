@@ -12,7 +12,7 @@ import LinearProgress from '@mui/material/LinearProgress';
 import theme from '../theme';
 import CustomPageContainer from '@/components/CustomContainer';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
-import TuneIcon from '@mui/icons-material/Tune';
+import BackupTableIcon from '@mui/icons-material/BackupTable';
 import GroupIcon from '@mui/icons-material/Group';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import RecentActorsIcon from '@mui/icons-material/RecentActors';
@@ -44,7 +44,7 @@ const NAVIGATION: Navigation = [
   {
     segment: 'filter',
     title: 'Bảng kê hoàn thuế',
-    icon: <TuneIcon />,
+    icon: <BackupTableIcon />,
   },
   {
     segment: 'export-declaration',
