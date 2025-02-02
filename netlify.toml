@@ -1,0 +1,5 @@
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+[context.production]
+  command = "next build"
+  cookies = true

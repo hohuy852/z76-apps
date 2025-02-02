@@ -1,0 +1,45 @@
+import * as React from 'react';
+import { styled } from '@mui/material/styles';
+import Button from '@mui/material/Button';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+
+const VisuallyHiddenInput = styled('input')({
+  clip: 'rect(0 0 0 0)',
+  clipPath: 'inset(50%)',
+  height: 1,
+  overflow: 'hidden',
+  position: 'absolute',
+  bottom: 0,
+  left: 0,
+  whiteSpace: 'nowrap',
+  width: 1,
+});
+
+interface InputFileUploadProps {
+  content?: string;
+  action: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  startIcon?: React.ReactNode; 
+  style?: React.CSSProperties;
+}
+
+const InputFileUpload: React.FC<InputFileUploadProps> = ({ content, action, startIcon, style }) => {
+  return (
+    <Button
+      component="label"
+      role={undefined}
+      variant="contained"
+      tabIndex={-1}
+      startIcon={startIcon || <CloudUploadIcon />}  
+      style={style}
+    >
+      { content || 'Tải lên'}
+      <VisuallyHiddenInput
+        type="file"
+        onChange={action}
+        multiple
+      />
+    </Button>
+  );
+};
+
+export default InputFileUpload;

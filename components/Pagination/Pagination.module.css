@@ -1,0 +1,47 @@
+.pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    font-family: Arial, sans-serif;
+  }
+  
+  .itemsPerPage {
+    display: flex;
+    align-items: center;
+  }
+  
+  .itemsPerPage label {
+    margin-right: 0.5rem;
+  }
+  
+  .itemsPerPage select {
+    padding: 0.25rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .pageControls {
+    display: flex;
+    align-items: center;
+  }
+  
+  .pageControls button {
+    padding: 0.5rem 1rem;
+    margin: 0 0.25rem;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .pageControls button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .pageControls span {
+    margin: 0 1rem;
+  }
+  
+  

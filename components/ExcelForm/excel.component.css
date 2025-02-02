@@ -1,0 +1,13 @@
+.excel-form-container{
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+    padding: 16px 32px;
+    background-color: #f0f4f9;
+    position: relative;
+}
+.action-table {
+    position: absolute;
+    right: 32px;
+    width: 100px;
+}
