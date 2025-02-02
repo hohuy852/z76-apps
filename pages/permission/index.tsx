@@ -219,7 +219,7 @@ export default function BasicTable() {
                 />
                 <TextField
                   fullWidth
-                  label="Vai trò"
+                  label="Chức vụ"
                   margin="dense"
                   value={selectedRow.position}
                   onChange={(e) =>
