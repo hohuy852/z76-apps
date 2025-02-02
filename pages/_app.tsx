@@ -46,6 +46,11 @@ const NAVIGATION: Navigation = [
     icon: <TuneIcon />,
   },
   {
+    segment: 'export-declaration',
+    title: 'Tờ khai hải quan',
+    icon: <TuneIcon />
+  },
+  {
     segment: 'users',
     title: 'Người dùng',
     icon: <GroupIcon />,
