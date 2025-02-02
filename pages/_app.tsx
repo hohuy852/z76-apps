@@ -4,7 +4,6 @@ import { DashboardLayout } from '@toolpad/core/DashboardLayout';
 import Head from 'next/head';
 import { AppCacheProvider } from '@mui/material-nextjs/v14-pagesRouter';
 import DashboardIcon from '@mui/icons-material/Dashboard';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import type { NextPage } from 'next';
 import type { AppProps } from 'next/app';
 import type { Navigation } from '@toolpad/core/AppProvider';
@@ -15,7 +14,9 @@ import CustomPageContainer from '@/components/CustomContainer';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import TuneIcon from '@mui/icons-material/Tune';
 import GroupIcon from '@mui/icons-material/Group';
-import CardTravelIcon from '@mui/icons-material/CardTravel';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import RecentActorsIcon from '@mui/icons-material/RecentActors';
+
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: React.ReactElement) => React.ReactNode;
   requireAuth?: boolean;
@@ -48,18 +49,18 @@ const NAVIGATION: Navigation = [
   {
     segment: 'export-declaration',
     title: 'Tờ khai hải quan',
-    icon: <TuneIcon />
+    icon: <AssignmentIcon />
   },
   {
     segment: 'users',
     title: 'Người dùng',
     icon: <GroupIcon />,
   },
-  // {
-  //   segment: 'collaboration',
-  //   title: 'Collaboration',≈
-  //   icon: <CardTravelIcon />,
-  // },
+  {
+    segment: 'permission',
+    title: 'Quản lý truy cập',
+    icon: <RecentActorsIcon />,
+  },
 ];
 
 const BRANDING = {
