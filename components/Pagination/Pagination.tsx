@@ -13,7 +13,7 @@ const PaginationContainer = styled("div")({
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
-  padding: "1rem",
+  marginTop: "20px"
 })
 
 const StyledFormControl = styled(FormControl)({
@@ -51,7 +51,7 @@ const Pagination: React.FC<PaginationProps> = ({
         >
           {itemsPerPageOptions.map((option) => (
             <MenuItem key={option} value={option}>
-              {option} bản ghi mỗi trang
+              {option}
             </MenuItem>
           ))}
         </Select>

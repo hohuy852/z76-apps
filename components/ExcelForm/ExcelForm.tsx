@@ -8,7 +8,7 @@ import 'handsontable/dist/handsontable.full.min.css';
 import './excel.component.css';
 import { prototype } from 'events';
 import { FormMode } from '@/enums/FormMode';
-import { Box, SvgIcon, Tooltip } from "@mui/material";
+import { Box, fabClasses, SvgIcon, Tooltip } from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 
@@ -60,6 +60,7 @@ const ExcelForm: React.FC<ChildProps> = ({tableData, blurCell, columns}) => {
         height="auto"
         licenseKey="non-commercial-and-evaluation"
         rowHeights='30px'
+        className="ht-theme-main" 
         wordWrap={false}
         colWidths={columns.filter(x => x.type != "Action").map(col => col.width)}
         manualColumnResize={true}
@@ -81,9 +82,9 @@ const ExcelForm: React.FC<ChildProps> = ({tableData, blurCell, columns}) => {
             return newData;
           });
         }}
-        dropdownMenu={true}
-        multiColumnSorting={true}
-        filters={true}
+        dropdownMenu={false}
+        multiColumnSorting={false}
+        filters={false}
         headerClassName="htLeft"
         manualRowMove={true}
         autoWrapRow={true}
@@ -103,7 +104,7 @@ const ExcelForm: React.FC<ChildProps> = ({tableData, blurCell, columns}) => {
       >
       </HotTable>
       <HotTable
-        className='action-table'
+        className='action-table ht-theme-main'
         ref={hotTableRef}
         data={tableData} // Tạo dữ liệu mẫu
         colHeaders={columns.filter(col => col.type == "Action").map((col) => col.title)}
@@ -121,6 +122,7 @@ const ExcelForm: React.FC<ChildProps> = ({tableData, blurCell, columns}) => {
           "clear_column",
         ]}
         rowHeaders={false}
+        readOnly={true}
         height="auto"
         licenseKey="non-commercial-and-evaluation"
         rowHeights='30px'
@@ -145,9 +147,9 @@ const ExcelForm: React.FC<ChildProps> = ({tableData, blurCell, columns}) => {
             return newData;
           });
         }}
-        dropdownMenu={true}
-        multiColumnSorting={true}
-        filters={true}
+        dropdownMenu={false}
+        multiColumnSorting={false}
+        filters={false}
         headerClassName="htLeft"
         manualRowMove={true}
         autoWrapRow={true}
@@ -156,43 +158,6 @@ const ExcelForm: React.FC<ChildProps> = ({tableData, blurCell, columns}) => {
         navigableHeaders={true}
       >
       </HotTable>
-      {/* <table>
-        <tr>
-          <th>
-            <div>
-              Chức năng
-            </div>
-          </th>
-        </tr>
-        {
-          tableData.map((row, index) => (
-            <tr key={index}>
-              <Box
-                sx={{
-                  display: "flex",
-                  gap: 1,
-                  alignItems: "center",
-                  padding: "0 20%",
-                }}
-              >
-                <Tooltip title="Duyệt" arrow>
-                  <SvgIcon
-                    component={CheckIcon}
-                    sx={{ color: "green", fontSize: 20, cursor: "pointer" }}
-                  />
-                </Tooltip>
-                <Tooltip title="Xem" arrow>
-                  <SvgIcon
-                    component={VisibilityIcon}
-                    sx={{ fontSize: 20, cursor: "pointer" }}
-                  />
-                </Tooltip>
-              </Box>
-            </tr>
-          ))
-        }
-      </table> */}
-      {/* <button onClick={handleExport}>Export Data</button> */}
     </div>
   );
 };

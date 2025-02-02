@@ -1,192 +1,21 @@
-.container {
-    padding: 20px;
-    background: #fff;
-    min-height: 100vh;
-}
 
-.header {
-    margin-bottom: 20px;
-}
-
-.title {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    flex-direction: row;
-}
-
-.title h1 {
-    font-size: 24px;
-    font-weight: 500;
-}
-.leftTitle{
-    display: flex;
-    gap: 10px;
-
-}
-.actions {
-    display: flex;
-    gap: 10px;
-}
-
-.actions button {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    padding: 8px;
-    border: none;
-    background: none;
-    cursor: pointer;
-    color: #666;
-}
-
-.actions button:hover {
-    color: #333;
-}
-
-.searchTypes {
-    display: flex;
-    gap: 20px;
-    margin-bottom: 20px;
-}
-
-.searchTypes label {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    cursor: pointer;
-}
-
-.filterGroups {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.filterGroup {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.operatorSelect {
-    width: 80px;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    height: 38px;
+.filterField{
     margin-right: 10px;
 }
-
-.filterRow {
+.filterRow{
     display: flex;
-    gap: 10px;
-    align-items: center;
 }
-
-.filterField {
-    display: flex;
-    gap: 10px;
-    align-items: center;
+.filterGroup{
+    margin-top: 15px;
 }
-
-.filterField input,
-.filterField select {
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    height: 38px;
+.deleteIcon{
+display: flex;
+cursor: pointer;
+align-items: center;
 }
-
-.dateRange {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
-.dateInput {
-    display: flex;
-    flex-direction: column;
-}
-
-.dateInput label {
-    font-size: 12px;
-    color: #666;
-    margin-bottom: 2px;
-}
-
-.dateInput input {
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    height: 38px;
-    width: 140px;
-}
-
 .filterActions {
-    display: flex;
-    gap: 10px;
+    margin: 20px 0;
 }
-
-.addCondition {
-    padding: 8px 16px;
-    border: 1px solid #ddd;
-    background: #fff;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.searchButton {
-    padding: 8px 16px;
-    border: none;
-    background: #28a745;
-    color: white;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.searchButton:hover {
-    background: #218838;
-}
-
-.tableContainer {
-    overflow-x: auto;
-}
-
-.table {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 1200px;
-}
-
-.table th {
-    background: #f8f9fa;
-    padding: 12px;
-    text-align: left;
-    font-weight: 600;
-    border-bottom: 2px solid #dee2e6;
-    border-right: 2px solid #dee2e6;
-}
-
-.table td {
-    padding: 8px;
-    border-bottom: 1px solid #dee2e6;
-    border-right: 1px solid #dee2e6;
-}
-
-.emptyState {
-    text-align: center;
-    padding: 40px;
-    color: #666;
-}
-
-.emptyState img {
-    margin-bottom: 20px;
-    opacity: 0.5;
-}
-
-.searchFieldInput {
-    width: 200px;
+.operatorSelect{
+    margin-right: 10px;
 }
