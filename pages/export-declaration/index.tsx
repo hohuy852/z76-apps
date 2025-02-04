@@ -19,6 +19,7 @@ import Cookies from "js-cookie";
 import dataToKhaiFake from "@/data/export-declaration";
 import { Autocomplete, TextField, Button } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
+import baseUrl from '@/hostingConfig';
 
 interface FilterGroup {
   id: number;
@@ -49,15 +50,18 @@ interface PaginationInfo {
 //   value: User[]
 // }
 export default function DocumentSearch() {
+  // State danh sách tờ khai trên form excel
   const [list, setList] = useState<any[]>([]);
-  const [currentDate, setCurrentDate] = useState<string>("");
-  const [searchType, setSearchType] = useState("all");
-  const [modeDetail, setModeDetail] = useState();
+  // State các user hiện có mặt trong form
   const [formUsers, setFormUsers] = useState<User[]>([]);
+  // State đánh dấu web socket đã thực hiện gửi thông tin user khi user vào form hay chưa
   const [sendUserStatus, setSendUserStatus] = useState(false);
+  // State đánh dấu đang lưu hay không (phục vụ hiển thị giao diện)
   const [isSaving, setIsSaving] = useState(false);
+  // router
   const router = useRouter();
   const pathname = usePathname();
+  // Các cột có trong tờ khai
   const columns = [
     {
       dataField: "stt",
@@ -538,6 +542,7 @@ export default function DocumentSearch() {
       searchValue: "",
     },
   ]);
+  // State danh sách các phép so sánh khi filter
   const [operatorList, setOperatorList] = useState<Operator[]>([
     {
       op: "equal",
@@ -566,14 +571,22 @@ export default function DocumentSearch() {
       title: "Không chứa",
     },
   ]);
+  // State trang hiện tại là trang bao nhiêu ở phân trang
   const [currentPage, setCurrentPage] = useState(1);
+  // State số bản ghi trong 1 trang
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  // State tổng số bản ghi theo filter
   const [totalItems, setTotalItems] = useState(0);
 
+  // Lấy ra thông tin user hiện tại ở localstorage, phục vụ gửi lên room user chung trong form
   const userId = localStorage.getItem("userId");
   const userName = localStorage.getItem("userName");
   const avatar = localStorage.getItem("avatar");
 
+  /**
+   * Action thay đổi phép so sánh khi filter
+   * @param type: kiểu dữ liệu khi thay đổi phép so sánh
+   */
   const changeOperatorList = (type: string) => {
     switch (type) {
       case "date":
@@ -667,6 +680,9 @@ export default function DocumentSearch() {
         ]);
     }
   };
+  /**
+   * Thực hiện thêm 1 cụm filter
+   */
   const addFilterGroup = () => {
     setFilterGroups([
       ...filterGroups,
@@ -688,11 +704,16 @@ export default function DocumentSearch() {
       },
     ]);
   };
+  /**
+   * Thực hiện xóa 1 cụm filter
+   * @param index: vị trí xóa
+   */
   const removeFilterGroup = (index: number) => {
     var tempArr = [...filterGroups];
     tempArr.splice(index, 1);
     setFilterGroups(tempArr);
   };
+  // Lấy ra các method của websocket sử dụng signalR
   const {
     messages,
     sendTableExportData,
@@ -700,7 +721,10 @@ export default function DocumentSearch() {
     connection,
     sendFilterGroups,
     sendPaginationInfo,
-  } = useSignalR("https://localhost:7152/chathub");
+  } = useSignalR(`${baseUrl}/chathub`);
+  /**
+   * Effect Lấy tổng số bản ghi theo filter hiện tại, gọi lại khi số bản ghi trong 1 trang được thay đổi (itemsPerPage)
+   */
   useEffect(() => {
     const fetchSummaryData = async () => {
       try {
@@ -726,12 +750,12 @@ export default function DocumentSearch() {
           }
         });
         const summary = await fetch(
-          "https://localhost:7152/api/ExportDeclarations/Paging",
+          `${baseUrl}/ExportDeclarations/Paging`,
           {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${Cookies.get("token")}`, // Thêm header Authorization
+              Authorization: `Bearer ${Cookies.get("authjs.session-token")}`, // Thêm header Authorization
             },
             body: JSON.stringify({
               filters: JSON.stringify(filterArrs.filter((x) => x.Field)),
@@ -749,6 +773,9 @@ export default function DocumentSearch() {
     };
     fetchSummaryData();
   }, [itemsPerPage]);
+  /**
+   * Effect lấy dữ liệu các tờ khai ở form excel theo filter hiện tại, gọi lại khi số bản ghi trong 1 trang hoặc trang số hiện tại thay đổi
+   */
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -774,12 +801,12 @@ export default function DocumentSearch() {
           }
         });
         const response = await fetch(
-          "https://localhost:7152/api/ExportDeclarations/Paging",
+          `${baseUrl}/ExportDeclarations/Paging`,
           {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${Cookies.get("token")}`, // Thêm header Authorization
+              Authorization: `Bearer ${Cookies.get("authjs.session-token")}`, // Thêm header Authorization
             },
             body: JSON.stringify({
               filters: JSON.stringify(filterArrs.filter((x) => x.Field)),
@@ -799,8 +826,14 @@ export default function DocumentSearch() {
     };
 
     fetchData();
-    setCurrentDate(new Date().toLocaleDateString());
-  }, [itemsPerPage, currentPage]); // [] để chỉ gọi một lần khi component render
+  }, [itemsPerPage, currentPage]); 
+  /**
+   * Effect thực hiện lắng nghe các sự kiện từ websocket thay đổi khi connection thay đổi
+   * + ReceiveTableExportData: Lắng nghe thông tin danh sách tờ khai được gửi từ user khác
+   * + UpdateUserList: Lắng nghe thông tin các user hiện tại trong form
+   * + ReceiveFilterGroups: Lắng nghe filter hiện tại từ các user khác
+   * + ReceivePaginationInfo: Lắng nghe chuyển đổi phân trang từ các user khác
+   */
   useEffect(() => {
     if (connection) {
       connection.on(
@@ -860,12 +893,19 @@ export default function DocumentSearch() {
       };
     }
   }, [connection]);
+  /**
+   * Effect thực hiện ngắt kết nối với websocket khi thay đổi route
+   */
   useEffect(() => {
     return () => {
       console.log("Route changed, closing WebSocket...");
       if (connection) connection.stop();
     };
   }, [pathname]); // Khi pathname thay đổi thì dừng connection
+  /**
+   * Thực hiện check liên tục xem connection websocket đã vào trạng thái connected chưa (kết nối thành công)
+   * thành công rồi thì mới gửi thông tin user khi vào form (bổ sung vào trạng thái các user hiện có trong form)
+   */
   if (sendUserStatus == false) {
     const waitForConnection = setInterval(() => {
       if (connection && connection.state === "Connected") {
@@ -875,21 +915,28 @@ export default function DocumentSearch() {
         clearInterval(waitForConnection);
       }
     }, 100);
+    // Gửi đc rồi thì xóa vòng lặp
     if (sendUserStatus) {
       clearInterval(waitForConnection);
     }
   }
-  // Hàm xử lý sự kiện từ component con
+  /**
+   * Thực hiện gửi websocket về data hiện tại ở form excel khi người dùng thực hiện sửa rồi nhảy từ ô này sang ô khác
+   * @param msg: data người dùng hiện tại gửi
+  */
   const blurCell = (msg: string) => {
     const parsedData = JSON.parse(msg);
     setList(parsedData);
     sendTableExportData(userId ?? "", msg);
     saveTableExportData(parsedData);
   };
-
+  /**
+   * Thực hiện tìm kiếm theo filter
+   */
   const searchExportDeclaration = async () => {
     console.log("filterGroups:", filterGroups);
     try {
+      // Chuẩn hóa lại filterGroup
       var filterArrs = [{ Field: "", Operator: "", Value: "" }];
       filterGroups.forEach((filter) => {
         if (filter.searchType == "date" && filter.compareType == "between") {
@@ -911,13 +958,14 @@ export default function DocumentSearch() {
           });
         }
       });
+      // Gọi api
       const response = await fetch(
-        "https://localhost:7152/api/ExportDeclarations/Paging",
+        `${baseUrl}/ExportDeclarations/Paging`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${Cookies.get("token")}`, // Thêm header Authorization
+            Authorization: `Bearer ${Cookies.get("authjs.session-token")}`, // Thêm header Authorization
           },
           body: JSON.stringify({
             filters: JSON.stringify(filterArrs.filter((x) => x.Field)),
@@ -927,7 +975,9 @@ export default function DocumentSearch() {
           }),
         }
       );
+      // parse kết quả
       const result = await response.json();
+      // Khi có kết quả, thực hiện set lại giá trị form excel, gửi thông tin form excel thay đổi, thông tin filter thay đổi cho tất cả user trong form
       setList(result.Data);
       sendTableExportData(userId ?? "", JSON.stringify(result.Data));
       sendFilterGroups(userId ?? "", JSON.stringify(filterGroups));
@@ -935,6 +985,9 @@ export default function DocumentSearch() {
       console.error("Lỗi khi fetch dữ liệu:", error);
     }
   };
+  /**
+   * Override actionRenderer của handsontable để thực hiện custom thêm nút "Duyệt" ở cuối bảng excel
+   */
   function actionRenderer(
     instance: Handsontable,
     td: HTMLElement,
@@ -976,31 +1029,39 @@ export default function DocumentSearch() {
 
     return td;
   }
-
+  /**
+   * Thực hiện Lưu dữ liệu danh sách tờ khai vào database
+   * @param saveList: Data ở form excel
+   * @returns 
+   */
   const saveTableExportData = async (saveList: any[]) => {
     try {
+      // Chỉ lấy những bản ghi được sửa (có trường state là 2)
       var updateRecords = saveList.filter((x) => x.state == FormMode.Update);
       if (updateRecords.length == 0) {
         return;
       }
+      // set biến đang lưu để thực hiện hiển thị loading
       setIsSaving(true);
+      // Gọi api Lưu
       var param = {
         mode: 2,
         records: updateRecords,
       };
       const response = await fetch(
-        `https://localhost:7152/api/ExportDeclarations/`,
+        `${baseUrl}/ExportDeclarations/`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${Cookies.get("token")}`, // Thêm header Authorization
+            Authorization: `Bearer ${Cookies.get("authjs.session-token")}`, // Thêm header Authorization
           },
           body: JSON.stringify(param),
         }
       );
       if (response.ok) {
         setIsSaving(false);
+        // Nếu lưu thành công, đưa danh sách về tất cả trạng thái View, để không bị lưu nhiều lần
         var viewList = list.map((item) => {
           return {
             ...item,
@@ -1013,12 +1074,18 @@ export default function DocumentSearch() {
       console.error("Lỗi khi fetch dữ liệu:", error);
     }
   };
+  /**
+   * Action đổi số trang ở phân trang
+   * @param event: Hành động đổi số trang
+   * @param page: trang số bao nhiêu
+   */
   const handlePageChange = async (
     event: React.ChangeEvent<unknown>,
     page: number
   ) => {
     setCurrentPage(page);
     console.log(`Page changed to ${page}`);
+    // Khi thay đổi số trang, thực hiện gửi websocket update lại số trang cho tất cả người dùng trong form
     sendPaginationInfo({
       itemsPerPage: itemsPerPage,
       currentPage: page,
@@ -1026,12 +1093,16 @@ export default function DocumentSearch() {
     // sendTableExportData(userId ?? "", JSON.stringify(list));
     // Implement your logic here to fetch data for the new page
   };
-
+  /**
+   * Action thực hiện thay đổi số bản ghi trong 1 trang
+   * @param event: hành động thay đổi số bản ghi trong 1 trang
+   */
   const handleItemsPerPageChange = async (event: SelectChangeEvent<number>) => {
     const newItemsPerPage = event.target.value as number;
     setItemsPerPage(newItemsPerPage);
     setCurrentPage(1); // Reset to first page when changing items per page
     console.log(`Items per page changed to ${newItemsPerPage}`);
+    // Khi thay đổi số bản ghi trong 1 trang, thực hiện gửi websocket update lại số bản ghi trong 1 trang cho tất cả người dùng trong form
     sendPaginationInfo({
       itemsPerPage: newItemsPerPage,
       currentPage: currentPage,
@@ -1040,7 +1111,7 @@ export default function DocumentSearch() {
     // Implement your logic here to fetch data with the new items per page
     // sendTableExportData(userId ?? "", JSON.stringify(list));
   };
-
+  // Nếu chưa có data ở form excel, hiển thị loading, dòng này chủ yếu để thực thi đồng bộ, có dữ liệu thì mới render ui
   if (!list) return <div>Loading...</div>;
 
   return (
@@ -1232,7 +1303,7 @@ export default function DocumentSearch() {
       </div>
       <div>
         <ExcelForm
-          tableData={dataToKhaiFake}
+          tableData={list}
           blurCell={blurCell}
           columns={columns}
         />
