@@ -141,33 +141,17 @@ export default function OrdersPage() {
   
       const newData1: any[] = [];
       const newData2: any[] = [];
-      const rowHeights1: number[] = [];
-      const rowHeights2: number[] = [];
   
-      allCodes.forEach((code, index) => {
+      allCodes.forEach((code) => {
         if (mapA.has(code) && mapB.has(code)) {
           newData1.push(mapA.get(code));
           newData2.push(mapB.get(code));
-  
-          // Lấy chiều cao của dòng từ mỗi bảng
-          rowHeights1.push(table1.getRowHeight(index) || 23);
-          rowHeights2.push(table2.getRowHeight(index) || 23);
         } else if (mapA.has(code)) {
           newData1.push(mapA.get(code));
           newData2.push(Array(data1[0].length).fill(null)); // Thêm hàng trống vào bảng B
-  
-          // Lấy chiều cao dòng từ bảng A để set cho bảng B
-          const height = table1.getRowHeight(index) || 23;
-          rowHeights1.push(height);
-          rowHeights2.push(height);
         } else {
           newData1.push(Array(data2[0].length).fill(null)); // Thêm hàng trống vào bảng A
           newData2.push(mapB.get(code));
-  
-          // Lấy chiều cao dòng từ bảng B để set cho bảng A
-          const height = table2.getRowHeight(index) || 23;
-          rowHeights1.push(height);
-          rowHeights2.push(height);
         }
       });
   
@@ -175,24 +159,40 @@ export default function OrdersPage() {
       table1.loadData(newData1);
       table2.loadData(newData2);
   
-      // Cập nhật chiều cao dòng
-      table1.updateSettings({ rowHeights: rowHeights1 });
-      table2.updateSettings({ rowHeights: rowHeights2 });
-  
       // Bôi đỏ hàng bị thiếu
       newData1.forEach((row, rowIndex) => {
         if (row.every((cell:any) => cell === null)) {
           for (let col = 0; col < row.length; col++) {
             table1.setCellMeta(rowIndex, col, "className", "htRowMissing");
           }
+          // Lấy chiều cao của dòng có dữ liệu từ bảng còn lại (bảng B)
+          const rowHeight = table2.getRowHeight(rowIndex);
+          const rowHeights = table1.getSettings().rowHeights as number[] || []; // Chuyển đổi rowHeights thành number[]
+  
+          rowHeights[rowIndex] = rowHeight;  // Đặt chiều cao cho dòng trống trong bảng A
+  
+          // Cập nhật lại chiều cao cho bảng A
+          table1.updateSettings({
+            rowHeights: rowHeights,
+          });
         }
       });
   
       newData2.forEach((row, rowIndex) => {
-        if (row.every((cell: any) => cell === null)) {
+        if (row.every((cell:any) => cell === null)) {
           for (let col = 0; col < row.length; col++) {
             table2.setCellMeta(rowIndex, col, "className", "htRowMissing");
           }
+          // Lấy chiều cao của dòng có dữ liệu từ bảng còn lại (bảng A)
+          const rowHeight = table1.getRowHeight(rowIndex);
+          const rowHeights = table2.getSettings().rowHeights as number[] || []; // Chuyển đổi rowHeights thành number[]
+  
+          rowHeights[rowIndex] = rowHeight;  // Đặt chiều cao cho dòng trống trong bảng B
+  
+          // Cập nhật lại chiều cao cho bảng B
+          table2.updateSettings({
+            rowHeights: rowHeights,
+          });
         }
       });
   
@@ -214,7 +214,7 @@ export default function OrdersPage() {
       table2.render();
     }
   };
-
+  
   return (
     <>
       <Head>
