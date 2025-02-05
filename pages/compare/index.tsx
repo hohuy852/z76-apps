@@ -127,21 +127,21 @@ export default function OrdersPage() {
     if (hotTableRef1.current && hotTableRef2.current) {
       const table1 = hotTableRef1.current.hotInstance;
       const table2 = hotTableRef2.current.hotInstance;
-  
+
       if (!table1 || !table2) return;
-  
+
       let data1 = table1.getData();
       let data2 = table2.getData();
-  
+
       const mapA = new Map(data1.map((row) => [row[0], row]));
       const mapB = new Map(data2.map((row) => [row[0], row]));
-  
+
       // Lấy danh sách mã hàng duy nhất từ cả hai bảng
       const allCodes = [...new Set([...mapA.keys(), ...mapB.keys()])].sort();
-  
+
       const newData1: any[] = [];
       const newData2: any[] = [];
-  
+
       allCodes.forEach((code) => {
         if (mapA.has(code) && mapB.has(code)) {
           newData1.push(mapA.get(code));
@@ -154,67 +154,77 @@ export default function OrdersPage() {
           newData2.push(mapB.get(code));
         }
       });
-  
+
       // Cập nhật lại dữ liệu của bảng
       table1.loadData(newData1);
       table2.loadData(newData2);
-  
-      // Bôi đỏ hàng bị thiếu
+
+      // Bôi đỏ toàn bộ dòng trong bảng A khi không có trong bảng B
       newData1.forEach((row, rowIndex) => {
-        if (row.every((cell:any) => cell === null)) {
+        if (row.every((cell: any) => cell === null)) {
           for (let col = 0; col < row.length; col++) {
             table1.setCellMeta(rowIndex, col, "className", "htRowMissing");
           }
+
           // Lấy chiều cao của dòng có dữ liệu từ bảng còn lại (bảng B)
           const rowHeight = table2.getRowHeight(rowIndex);
-          const rowHeights = table1.getSettings().rowHeights as number[] || []; // Chuyển đổi rowHeights thành number[]
-  
-          rowHeights[rowIndex] = rowHeight;  // Đặt chiều cao cho dòng trống trong bảng A
-  
+          const rowHeights =
+            (table1.getSettings().rowHeights as number[]) || []; // Chuyển đổi rowHeights thành number[]
+
+          rowHeights[rowIndex] = rowHeight; // Đặt chiều cao cho dòng trống trong bảng A
+
           // Cập nhật lại chiều cao cho bảng A
           table1.updateSettings({
             rowHeights: rowHeights,
           });
         }
       });
-  
+
+      // Bôi đỏ toàn bộ dòng trong bảng B khi không có trong bảng A
       newData2.forEach((row, rowIndex) => {
-        if (row.every((cell:any) => cell === null)) {
+        if (row.every((cell: any) => cell === null)) {
           for (let col = 0; col < row.length; col++) {
             table2.setCellMeta(rowIndex, col, "className", "htRowMissing");
           }
+
           // Lấy chiều cao của dòng có dữ liệu từ bảng còn lại (bảng A)
           const rowHeight = table1.getRowHeight(rowIndex);
-          const rowHeights = table2.getSettings().rowHeights as number[] || []; // Chuyển đổi rowHeights thành number[]
-  
-          rowHeights[rowIndex] = rowHeight;  // Đặt chiều cao cho dòng trống trong bảng B
-  
+          const rowHeights =
+            (table2.getSettings().rowHeights as number[]) || []; // Chuyển đổi rowHeights thành number[]
+
+          rowHeights[rowIndex] = rowHeight; // Đặt chiều cao cho dòng trống trong bảng B
+
           // Cập nhật lại chiều cao cho bảng B
           table2.updateSettings({
             rowHeights: rowHeights,
           });
         }
       });
-  
-      // So sánh từng ô để bôi đỏ ô có giá trị khác nhau
+
+      // Bôi đỏ các ô khác biệt giữa hai bảng (bao gồm ô đầu tiên)
       newData1.forEach((row, rowIndex) => {
-        for (let col = 1; col < row.length; col++) {
+        for (let col = 0; col < row.length; col++) {
           const valueA = row[col];
-          const valueB = newData2[rowIndex][col];
-  
+          const valueB = newData2[rowIndex] ? newData2[rowIndex][col] : null;
+
+          // Nếu có sự khác biệt, bôi đỏ các ô trong cả hai bảng
           if (valueA !== valueB) {
             table1.setCellMeta(rowIndex, col, "className", "htCellDifference");
             table2.setCellMeta(rowIndex, col, "className", "htCellDifference");
+          } else {
+            // Nếu không có sự khác biệt, xóa lớp bôi đỏ
+            table1.setCellMeta(rowIndex, col, "className", "");
+            table2.setCellMeta(rowIndex, col, "className", "");
           }
         }
       });
-  
+
       // Render lại bảng
       table1.render();
       table2.render();
     }
   };
-  
+
   return (
     <>
       <Head>
