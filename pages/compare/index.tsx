@@ -127,41 +127,131 @@ export default function OrdersPage() {
     if (hotTableRef1.current && hotTableRef2.current) {
       const table1 = hotTableRef1.current.hotInstance;
       const table2 = hotTableRef2.current.hotInstance;
-
+  
       if (!table1 || !table2) return;
-
+  
       const data1 = table1.getData(); // Lấy toàn bộ dữ liệu từ bảng 1
       const data2 = table2.getData(); // Lấy toàn bộ dữ liệu từ bảng 2
       const maxRows = Math.max(data1.length, data2.length);
       const maxCols = Math.max(data1[0].length, data2[0].length);
-
+  
       const differences: number[] = []; // Mảng để lưu các chỉ mục có sự khác biệt
-
+      const missingInA: number[] = []; // Dòng không có trong file A
+      const missingInB: number[] = []; // Dòng không có trong file B
+  
+      // Kiểm tra sự khác biệt giữa các giá trị
       for (let row = 0; row < maxRows; row++) {
         for (let col = 0; col < maxCols; col++) {
           const value1 = data1[row] ? data1[row][col] : null;
           const value2 = data2[row] ? data2[row][col] : null;
-
-          // Nếu có sự khác biệt, đánh dấu cả hai bảng
+  
           if (value1 !== value2) {
-            table1.setCellMeta(row, col, "className", "htCellDifference");
-            table2.setCellMeta(row, col, "className", "htCellDifference");
-
-            // Lưu vị trí của sự khác biệt vào mảng
             if (!differences.includes(row)) {
               differences.push(row);
             }
+          }
+        }
+      }
+  
+      // Kiểm tra và lưu các dòng thiếu trong mỗi bảng
+      const codesA = data1.map((row) => row[0]); // Lấy mã hàng trong bảng A
+      const codesB = data2.map((row) => row[0]); // Lấy mã hàng trong bảng B
+      if(data1.length != data2.length){
+
+        // Duyệt qua bảng A để tìm các dòng không có trong bảng B
+        data1.forEach((row, rowIndex) => {
+          const codeA = row[0]; // Mã hàng trong bảng A
+          if (!codesB.includes(codeA)) {
+            missingInB.push(rowIndex); // Dòng không có trong bảng B
+          }
+        });
+    
+        // Duyệt qua bảng B để tìm các dòng không có trong bảng A
+        data2.forEach((row, rowIndex) => {
+          const codeB = row[0]; // Mã hàng trong bảng B
+          if (!codesA.includes(codeB)) {
+            missingInA.push(rowIndex); // Dòng không có trong bảng A
+          }
+        });
+    
+        // Thêm dòng trống vào file A tại các chỉ mục bị thiếu từ file B
+        missingInA.forEach((index) => {
+          const rowHeight = table1.getRowHeight(index); // Lấy chiều cao dòng thừa trong bảng A
+          data1.splice(index, 0, Array(data1[0].length).fill(null)); // Thêm dòng trống vào vị trí
+          // table1.updateSettings({
+          //   rowHeights: [...Array(index).fill(rowHeight), rowHeight, ...Array(data1.length - index - 1).fill(rowHeight)]
+          // }); // Đặt chiều cao cho dòng trống
+          const rowHeights = table1.getSettings().rowHeights as number[] || [];
+          rowHeights[index] = rowHeight;  // Chỉ thay đổi chiều cao của dòng trống tại index
+
+          // Cập nhật chiều cao cho bảng sau khi thêm dòng trống
+          table1.updateSettings({
+            rowHeights: rowHeights
+          });
+        });
+    
+        // Thêm dòng trống vào file B tại các chỉ mục bị thiếu từ file A
+        missingInB.forEach((index) => {
+          const rowHeight = table2.getRowHeight(index); // Lấy chiều cao dòng thừa trong bảng B
+          data2.splice(index, 0, Array(data2[0].length).fill(null)); // Thêm dòng trống vào vị trí
+          // table2.updateSettings({
+          //   rowHeights: [...Array(index).fill(rowHeight), rowHeight, ...Array(data2.length - index - 1).fill(rowHeight)]
+          // }); // Đặt chiều cao cho dòng trống
+          // Cập nhật lại chiều cao cho dòng trống vừa thêm vào
+          const rowHeights = table2.getSettings().rowHeights as number[] || [];
+          rowHeights[index] = rowHeight;  // Chỉ thay đổi chiều cao của dòng trống tại index
+
+          // Cập nhật chiều cao cho bảng sau khi thêm dòng trống
+          table2.updateSettings({
+            rowHeights: rowHeights
+          });
+        });
+    
+        // Cập nhật dữ liệu cho các bảng
+        
+        table1.loadData(data1);
+        table2.loadData(data2);
+      }
+  
+      // Tô đỏ các ô có sự khác biệt sau khi thêm dòng trống
+      for (let row = 0; row < maxRows; row++) {
+        for (let col = 0; col < maxCols; col++) {
+          const value1 = data1[row] ? data1[row][col] : null;
+          const value2 = data2[row] ? data2[row][col] : null;
+  
+          // Nếu có sự khác biệt, tô đỏ các ô
+          if (value1 !== value2) {
+            table1.setCellMeta(row, col, "className", "htCellDifference");
+            table2.setCellMeta(row, col, "className", "htCellDifference");
           } else {
             table1.setCellMeta(row, col, "className", "");
             table2.setCellMeta(row, col, "className", "");
           }
         }
       }
-
+      // setDataA([...data1]); // Cập nhật bảng A
+      // setDataB([...data2]); // Cập nhật bảng B
+      // Render lại bảng sau khi thay đổi
       table1.render();
       table2.render();
+      // Log các dòng khác biệt
+      if (missingInA.length > 0) {
+        console.log("Các dòng khác biệt trong bảng B (không có trong bảng A):");
+        missingInA.forEach((index) => {
+          console.log(`Dòng khác biệt ở chỉ mục ${index}:`, data2[index]);
+        });
+      }
+  
+      if (missingInB.length > 0) {
+        console.log("Các dòng khác biệt trong bảng A (không có trong bảng B):");
+        missingInB.forEach((index) => {
+          console.log(`Dòng khác biệt ở chỉ mục ${index}:`, data1[index]);
+        });
+      }
     }
   };
+  
+  
   React.useEffect(() => {
     if (hotTableRef1.current && hotTableRef2.current) {
       const table1 = hotTableRef1.current.hotInstance;
@@ -302,6 +392,7 @@ export default function OrdersPage() {
               navigableHeaders={true}
               licenseKey="non-commercial-and-evaluation"
               className="ht-theme-main" // Apply theme class here
+              autoRowSize={true}
             >
               <HotColumn data={0} />
               <HotColumn data={1} />
@@ -349,6 +440,7 @@ export default function OrdersPage() {
               navigableHeaders={true}
               licenseKey="non-commercial-and-evaluation"
               className="ht-theme-main" // Apply theme class here
+              autoRowSize={true}
             >
               <HotColumn data={0} />
               <HotColumn data={1} />
