@@ -17,7 +17,7 @@ import "./style.css";
 // register Handsontable's modules
 registerAllModules();
 
-const convertExcelToSampleData = (
+const convertExcelToSampleData_EFFECT = (
   file: File
 ): Promise<(string | number)[][]> => {
   return new Promise((resolve, reject) => {
@@ -32,7 +32,31 @@ const convertExcelToSampleData = (
       });
 
       const formattedData = jsonData.slice(7).map((row) => {
-        return row.slice(0, 8);
+        return row.slice(0, 7);
+      });
+      resolve(formattedData);
+    };
+    reader.onerror = (error) => reject(error);
+    reader.readAsArrayBuffer(file);
+  });
+};
+
+const convertExcelToSampleData_ERP = (
+  file: File
+): Promise<(string | number)[][]> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const data = new Uint8Array(e.target!.result as ArrayBuffer);
+      const workbook = XLSX.read(data, { type: "array" });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const jsonData = XLSX.utils.sheet_to_json<any[]>(worksheet, {
+        header: 1,
+      });
+
+      const formattedData = jsonData.slice(7).map((row) => {
+        return row.slice(1, 8);
       });
       resolve(formattedData);
     };
@@ -73,7 +97,7 @@ export default function OrdersPage() {
     if (file) {
       try {
         resetTable(hotTableRef1); // Reset bảng trước khi nhập dữ liệu mới
-        const formattedData = await convertExcelToSampleData(file);
+        const formattedData = await convertExcelToSampleData_EFFECT(file);
         setDataA(formattedData);
       } catch (error) {
         console.error("Error uploading file A:", error);
@@ -86,7 +110,7 @@ export default function OrdersPage() {
     if (file) {
       try {
         resetTable(hotTableRef2); // Reset bảng trước khi nhập dữ liệu mới
-        const formattedData = await convertExcelToSampleData(file);
+        const formattedData = await convertExcelToSampleData_ERP(file);
         setDataB(formattedData);
       } catch (error) {
         console.error("Error uploading file B:", error);
@@ -130,8 +154,63 @@ export default function OrdersPage() {
 
       if (!table1 || !table2) return;
 
-      let data1 = table1.getData();
-      let data2 = table2.getData();
+      let effectData = table1.getData();
+      let erpData = table2.getData();
+
+      const EffectmergedMap = new Map<string, any>();
+      effectData.forEach(row => {
+          const key = row[0];
+
+          if (EffectmergedMap.has(key)) {
+              let existing = EffectmergedMap.get(key);
+
+              // Sum numeric values (index 3 to 6)
+              for (let i = 3; i <= 6; i++) {
+                  existing[i] += row[i];
+              }
+          } else {
+              // Clone the row to avoid modifying the original input
+              let newRow = [...row];
+
+              // Replace "table{khoX}" with "table"
+              if (typeof newRow[1] === "string") {
+                  newRow[1] = newRow[1].split("{")[0];
+              }
+
+              EffectmergedMap.set(key, newRow);
+          }
+      });
+
+      // Convert Map back to an array
+      const data1 = Array.from(EffectmergedMap.values());
+
+      const ERPmergedMap = new Map<string, any>();
+      erpData.forEach(row => {
+        const key = row[0];
+
+        if (ERPmergedMap.has(key)) {
+            let existing = ERPmergedMap.get(key);
+
+            // Sum numeric values (index 3 to 6)
+            for (let i = 3; i <= 6; i++) {
+                existing[i] += row[i];
+            }
+        } else {
+            // Clone the row to avoid modifying the original input
+            let newRow = [...row];
+
+            // Replace "table{khoX}" with "table"
+            if (typeof newRow[1] === "string") {
+                newRow[1] = newRow[1].split("{")[0];
+            }
+
+            ERPmergedMap.set(key, newRow);
+        }
+      });
+
+      // Convert Map back to an array
+      const data2 = Array.from(ERPmergedMap.values());
+
 
       const mapA = new Map(data1.map((row) => [row[0], row]));
       const mapB = new Map(data2.map((row) => [row[0], row]));
@@ -243,7 +322,7 @@ export default function OrdersPage() {
               alignItems: "center",
             }}
           >
-            <UploadButton content="Kho A" action={handleUploadA} />
+            <UploadButton content="EFFECT DATA" action={handleUploadA} />
             <Button
               startIcon={<CompareArrowsIcon />}
               onClick={compareData}
@@ -251,7 +330,7 @@ export default function OrdersPage() {
             >
               Đối chiếu
             </Button>
-            <UploadButton content="Kho B" action={handleUploadB} />
+            <UploadButton content="ERP DATA" action={handleUploadB} />
           </Stack>
         </Grid2>
         <Grid2 size={12}>
