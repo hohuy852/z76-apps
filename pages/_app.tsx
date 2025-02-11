@@ -31,11 +31,11 @@ const NAVIGATION: Navigation = [
     kind: 'header',
     title: 'Main items',
   },
-  {
-    segment: '',
-    title: 'Tổng quan',
-    icon: <DashboardIcon />,
-  },
+  // {
+  //   segment: '',
+  //   title: 'Tổng quan',
+  //   icon: <DashboardIcon />,
+  // },
   {
     segment: 'compare',
     title: 'Đối chiếu thẻ kho',
@@ -46,21 +46,21 @@ const NAVIGATION: Navigation = [
     title: 'Bảng kê hoàn thuế',
     icon: <BackupTableIcon />,
   },
-  {
-    segment: 'export-declaration',
-    title: 'Tờ khai hải quan',
-    icon: <AssignmentIcon />
-  },
-  {
-    segment: 'users',
-    title: 'Người dùng',
-    icon: <GroupIcon />,
-  },
-  {
-    segment: 'permission',
-    title: 'Quản lý truy cập',
-    icon: <RecentActorsIcon />,
-  },
+  // {
+  //   segment: 'export-declaration',
+  //   title: 'Tờ khai hải quan',
+  //   icon: <AssignmentIcon />
+  // },
+  // {
+  //   segment: 'users',
+  //   title: 'Người dùng',
+  //   icon: <GroupIcon />,
+  // },
+  // {
+  //   segment: 'permission',
+  //   title: 'Quản lý truy cập',
+  //   icon: <RecentActorsIcon />,
+  // },
 ];
 
 const BRANDING = {

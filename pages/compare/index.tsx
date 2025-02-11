@@ -25,15 +25,21 @@ const convertExcelToSampleData_EFFECT = (
     reader.onload = (e) => {
       const data = new Uint8Array(e.target!.result as ArrayBuffer);
       const workbook = XLSX.read(data, { type: "array" });
+      console.log("workbook", workbook);
       const sheetName = workbook.SheetNames[0];
+      console.log("sheetName", sheetName);
+      
       const worksheet = workbook.Sheets[sheetName];
+      
       const jsonData = XLSX.utils.sheet_to_json<any[]>(worksheet, {
         header: 1,
       });
-
+      console.log(jsonData);
       const formattedData = jsonData.slice(7).map((row) => {
         return row.slice(0, 7);
       });
+      console.log(formattedData);
+      
       resolve(formattedData);
     };
     reader.onerror = (error) => reject(error);
@@ -49,7 +55,10 @@ const convertExcelToSampleData_ERP = (
     reader.onload = (e) => {
       const data = new Uint8Array(e.target!.result as ArrayBuffer);
       const workbook = XLSX.read(data, { type: "array" });
-      const sheetName = workbook.SheetNames[0];
+      console.log("workbook", workbook);
+      
+      const sheetName = workbook.SheetNames[1];
+      console.log("sheetName", sheetName);
       const worksheet = workbook.Sheets[sheetName];
       const jsonData = XLSX.utils.sheet_to_json<any[]>(worksheet, {
         header: 1,
@@ -99,6 +108,7 @@ export default function OrdersPage() {
         resetTable(hotTableRef1); // Reset bảng trước khi nhập dữ liệu mới
         const formattedData = await convertExcelToSampleData_EFFECT(file);
         setDataA(formattedData);
+        console.log(formattedData);
       } catch (error) {
         console.error("Error uploading file A:", error);
       }
@@ -333,7 +343,7 @@ export default function OrdersPage() {
             <UploadButton content="ERP DATA" action={handleUploadB} />
           </Stack>
         </Grid2>
-        <Grid2 size={12}>
+        {/* <Grid2 size={12}>
           <FormGroup style={{ width: "fit-content" }}>
             <FormControlLabel
               control={
@@ -345,7 +355,7 @@ export default function OrdersPage() {
               label="Ẩn các hàng giống nhau"
             />
           </FormGroup>
-        </Grid2>
+        </Grid2> */}
         <Grid2 container size={12}>
           <Grid2 size="grow">
             <HotTable
