@@ -1,2 +1,2 @@
-const baseUrl = "http://192.168.1.5:80/api";
+const baseUrl = "https://7bad-116-96-45-233.ngrok-free.app/api";
 export default baseUrl;
