@@ -57,7 +57,7 @@ const convertExcelToSampleData_ERP = (
       const workbook = XLSX.read(data, { type: "array" });
       console.log("workbook", workbook);
       
-      const sheetName = workbook.SheetNames[1];
+      const sheetName = workbook.SheetNames[0];
       console.log("sheetName", sheetName);
       const worksheet = workbook.Sheets[sheetName];
       const jsonData = XLSX.utils.sheet_to_json<any[]>(worksheet, {
