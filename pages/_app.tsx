@@ -41,8 +41,13 @@ const NAVIGATION: Navigation = [
     title: 'Đối chiếu thẻ kho',
     icon: <CompareArrowsIcon />,
   },
+  // {
+  //   segment: 'filter',
+  //   title: 'Bảng kê hoàn thuế',
+  //   icon: <BackupTableIcon />,
+  // },
   {
-    segment: 'filter',
+    segment: 'voucher',
     title: 'Bảng kê hoàn thuế',
     icon: <BackupTableIcon />,
   },
