@@ -17,7 +17,7 @@ import "./style.css";
 // register Handsontable's modules
 registerAllModules();
 
-const convertExcelToSampleData = (
+const convertExcelToSampleData_EFFECT = (
   file: File
 ): Promise<(string | number)[][]> => {
   return new Promise((resolve, reject) => {
@@ -25,14 +25,47 @@ const convertExcelToSampleData = (
     reader.onload = (e) => {
       const data = new Uint8Array(e.target!.result as ArrayBuffer);
       const workbook = XLSX.read(data, { type: "array" });
+      console.log("workbook", workbook);
       const sheetName = workbook.SheetNames[0];
+      console.log("sheetName", sheetName);
+      
+      const worksheet = workbook.Sheets[sheetName];
+      
+      const jsonData = XLSX.utils.sheet_to_json<any[]>(worksheet, {
+        header: 1,
+      });
+      console.log(jsonData);
+      const formattedData = jsonData.slice(7).map((row) => {
+        return row.slice(0, 7);
+      });
+      console.log(formattedData);
+      
+      resolve(formattedData);
+    };
+    reader.onerror = (error) => reject(error);
+    reader.readAsArrayBuffer(file);
+  });
+};
+
+const convertExcelToSampleData_ERP = (
+  file: File
+): Promise<(string | number)[][]> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const data = new Uint8Array(e.target!.result as ArrayBuffer);
+      const workbook = XLSX.read(data, { type: "array" });
+      console.log("workbook", workbook);
+      
+      const sheetName = workbook.SheetNames[0];
+      console.log("sheetName", sheetName);
       const worksheet = workbook.Sheets[sheetName];
       const jsonData = XLSX.utils.sheet_to_json<any[]>(worksheet, {
         header: 1,
       });
 
       const formattedData = jsonData.slice(7).map((row) => {
-        return row.slice(0, 8);
+        return row.slice(1, 8);
       });
       resolve(formattedData);
     };
@@ -73,8 +106,9 @@ export default function OrdersPage() {
     if (file) {
       try {
         resetTable(hotTableRef1); // Reset bảng trước khi nhập dữ liệu mới
-        const formattedData = await convertExcelToSampleData(file);
+        const formattedData = await convertExcelToSampleData_EFFECT(file);
         setDataA(formattedData);
+        console.log(formattedData);
       } catch (error) {
         console.error("Error uploading file A:", error);
       }
@@ -86,7 +120,7 @@ export default function OrdersPage() {
     if (file) {
       try {
         resetTable(hotTableRef2); // Reset bảng trước khi nhập dữ liệu mới
-        const formattedData = await convertExcelToSampleData(file);
+        const formattedData = await convertExcelToSampleData_ERP(file);
         setDataB(formattedData);
       } catch (error) {
         console.error("Error uploading file B:", error);
@@ -127,191 +161,159 @@ export default function OrdersPage() {
     if (hotTableRef1.current && hotTableRef2.current) {
       const table1 = hotTableRef1.current.hotInstance;
       const table2 = hotTableRef2.current.hotInstance;
-  
+
       if (!table1 || !table2) return;
-  
-      const data1 = table1.getData(); // Lấy toàn bộ dữ liệu từ bảng 1
-      const data2 = table2.getData(); // Lấy toàn bộ dữ liệu từ bảng 2
-      const maxRows = Math.max(data1.length, data2.length);
-      const maxCols = Math.max(data1[0].length, data2[0].length);
-  
-      const differences: number[] = []; // Mảng để lưu các chỉ mục có sự khác biệt
-      const missingInA: number[] = []; // Dòng không có trong file A
-      const missingInB: number[] = []; // Dòng không có trong file B
-  
-      // Kiểm tra sự khác biệt giữa các giá trị
-      for (let row = 0; row < maxRows; row++) {
-        for (let col = 0; col < maxCols; col++) {
-          const value1 = data1[row] ? data1[row][col] : null;
-          const value2 = data2[row] ? data2[row][col] : null;
-  
-          if (value1 !== value2) {
-            if (!differences.includes(row)) {
-              differences.push(row);
-            }
-          }
-        }
-      }
-  
-      // Kiểm tra và lưu các dòng thiếu trong mỗi bảng
-      const codesA = data1.map((row) => row[0]); // Lấy mã hàng trong bảng A
-      const codesB = data2.map((row) => row[0]); // Lấy mã hàng trong bảng B
-      if(data1.length != data2.length){
 
-        // Duyệt qua bảng A để tìm các dòng không có trong bảng B
-        data1.forEach((row, rowIndex) => {
-          const codeA = row[0]; // Mã hàng trong bảng A
-          if (!codesB.includes(codeA)) {
-            missingInB.push(rowIndex); // Dòng không có trong bảng B
-          }
-        });
-    
-        // Duyệt qua bảng B để tìm các dòng không có trong bảng A
-        data2.forEach((row, rowIndex) => {
-          const codeB = row[0]; // Mã hàng trong bảng B
-          if (!codesA.includes(codeB)) {
-            missingInA.push(rowIndex); // Dòng không có trong bảng A
-          }
-        });
-    
-        // Thêm dòng trống vào file A tại các chỉ mục bị thiếu từ file B
-        missingInA.forEach((index) => {
-          const rowHeight = table1.getRowHeight(index); // Lấy chiều cao dòng thừa trong bảng A
-          data1.splice(index, 0, Array(data1[0].length).fill(null)); // Thêm dòng trống vào vị trí
-          // table1.updateSettings({
-          //   rowHeights: [...Array(index).fill(rowHeight), rowHeight, ...Array(data1.length - index - 1).fill(rowHeight)]
-          // }); // Đặt chiều cao cho dòng trống
-          const rowHeights = table1.getSettings().rowHeights as number[] || [];
-          rowHeights[index] = rowHeight;  // Chỉ thay đổi chiều cao của dòng trống tại index
+      let effectData = table1.getData();
+      let erpData = table2.getData();
 
-          // Cập nhật chiều cao cho bảng sau khi thêm dòng trống
-          table1.updateSettings({
-            rowHeights: rowHeights
-          });
-        });
-    
-        // Thêm dòng trống vào file B tại các chỉ mục bị thiếu từ file A
-        missingInB.forEach((index) => {
-          const rowHeight = table2.getRowHeight(index); // Lấy chiều cao dòng thừa trong bảng B
-          data2.splice(index, 0, Array(data2[0].length).fill(null)); // Thêm dòng trống vào vị trí
-          // table2.updateSettings({
-          //   rowHeights: [...Array(index).fill(rowHeight), rowHeight, ...Array(data2.length - index - 1).fill(rowHeight)]
-          // }); // Đặt chiều cao cho dòng trống
-          // Cập nhật lại chiều cao cho dòng trống vừa thêm vào
-          const rowHeights = table2.getSettings().rowHeights as number[] || [];
-          rowHeights[index] = rowHeight;  // Chỉ thay đổi chiều cao của dòng trống tại index
+      const EffectmergedMap = new Map<string, any>();
+      effectData.forEach(row => {
+          const key = row[0];
 
-          // Cập nhật chiều cao cho bảng sau khi thêm dòng trống
-          table2.updateSettings({
-            rowHeights: rowHeights
-          });
-        });
-    
-        // Cập nhật dữ liệu cho các bảng
-        
-        table1.loadData(data1);
-        table2.loadData(data2);
-      }
-  
-      // Tô đỏ các ô có sự khác biệt sau khi thêm dòng trống
-      for (let row = 0; row < maxRows; row++) {
-        for (let col = 0; col < maxCols; col++) {
-          const value1 = data1[row] ? data1[row][col] : null;
-          const value2 = data2[row] ? data2[row][col] : null;
-  
-          // Nếu có sự khác biệt, tô đỏ các ô
-          if (value1 !== value2) {
-            table1.setCellMeta(row, col, "className", "htCellDifference");
-            table2.setCellMeta(row, col, "className", "htCellDifference");
+          if (EffectmergedMap.has(key)) {
+              let existing = EffectmergedMap.get(key);
+
+              // Sum numeric values (index 3 to 6)
+              for (let i = 3; i <= 6; i++) {
+                  existing[i] += row[i];
+              }
           } else {
-            table1.setCellMeta(row, col, "className", "");
-            table2.setCellMeta(row, col, "className", "");
+              // Clone the row to avoid modifying the original input
+              let newRow = [...row];
+
+              // Replace "table{khoX}" with "table"
+              if (typeof newRow[1] === "string") {
+                  newRow[1] = newRow[1].split("{")[0];
+              }
+
+              EffectmergedMap.set(key, newRow);
+          }
+      });
+
+      // Convert Map back to an array
+      const data1 = Array.from(EffectmergedMap.values());
+
+      const ERPmergedMap = new Map<string, any>();
+      erpData.forEach(row => {
+        const key = row[0];
+
+        if (ERPmergedMap.has(key)) {
+            let existing = ERPmergedMap.get(key);
+
+            // Sum numeric values (index 3 to 6)
+            for (let i = 3; i <= 6; i++) {
+                existing[i] += row[i];
+            }
+        } else {
+            // Clone the row to avoid modifying the original input
+            let newRow = [...row];
+
+            // Replace "table{khoX}" with "table"
+            if (typeof newRow[1] === "string") {
+                newRow[1] = newRow[1].split("{")[0];
+            }
+
+            ERPmergedMap.set(key, newRow);
+        }
+      });
+
+      // Convert Map back to an array
+      const data2 = Array.from(ERPmergedMap.values());
+
+
+      const mapA = new Map(data1.map((row) => [row[0], row]));
+      const mapB = new Map(data2.map((row) => [row[0], row]));
+
+      // Lấy danh sách mã hàng duy nhất từ cả hai bảng
+      const allCodes = [...new Set([...mapA.keys(), ...mapB.keys()])].sort();
+
+      const newData1: any[] = [];
+      const newData2: any[] = [];
+
+      allCodes.forEach((code) => {
+        if (mapA.has(code) && mapB.has(code)) {
+          newData1.push(mapA.get(code));
+          newData2.push(mapB.get(code));
+        } else if (mapA.has(code)) {
+          newData1.push(mapA.get(code));
+          newData2.push(Array(data1[0].length).fill(null)); // Thêm hàng trống vào bảng B
+        } else {
+          newData1.push(Array(data2[0].length).fill(null)); // Thêm hàng trống vào bảng A
+          newData2.push(mapB.get(code));
+        }
+      });
+
+      // Cập nhật lại dữ liệu của bảng
+      table1.loadData(newData1);
+      table2.loadData(newData2);
+
+      // Bôi đỏ toàn bộ dòng trong bảng A khi không có trong bảng B
+      newData1.forEach((row, rowIndex) => {
+        if (row.every((cell: any) => cell === null)) {
+          for (let col = 0; col < row.length; col++) {
+            table1.setCellMeta(rowIndex, col, "className", "htRowMissing");
+          }
+
+          // Lấy chiều cao của dòng có dữ liệu từ bảng còn lại (bảng B)
+          const rowHeight = table2.getRowHeight(rowIndex);
+          const rowHeights =
+            (table1.getSettings().rowHeights as number[]) || []; // Chuyển đổi rowHeights thành number[]
+
+          rowHeights[rowIndex] = rowHeight; // Đặt chiều cao cho dòng trống trong bảng A
+
+          // Cập nhật lại chiều cao cho bảng A
+          table1.updateSettings({
+            rowHeights: rowHeights,
+          });
+        }
+      });
+
+      // Bôi đỏ toàn bộ dòng trong bảng B khi không có trong bảng A
+      newData2.forEach((row, rowIndex) => {
+        if (row.every((cell: any) => cell === null)) {
+          for (let col = 0; col < row.length; col++) {
+            table2.setCellMeta(rowIndex, col, "className", "htRowMissing");
+          }
+
+          // Lấy chiều cao của dòng có dữ liệu từ bảng còn lại (bảng A)
+          const rowHeight = table1.getRowHeight(rowIndex);
+          const rowHeights =
+            (table2.getSettings().rowHeights as number[]) || []; // Chuyển đổi rowHeights thành number[]
+
+          rowHeights[rowIndex] = rowHeight; // Đặt chiều cao cho dòng trống trong bảng B
+
+          // Cập nhật lại chiều cao cho bảng B
+          table2.updateSettings({
+            rowHeights: rowHeights,
+          });
+        }
+      });
+
+      // Bôi đỏ các ô khác biệt giữa hai bảng (bao gồm ô đầu tiên)
+      newData1.forEach((row, rowIndex) => {
+        for (let col = 0; col < row.length; col++) {
+          const valueA = row[col];
+          const valueB = newData2[rowIndex] ? newData2[rowIndex][col] : null;
+
+          // Nếu có sự khác biệt, bôi đỏ các ô trong cả hai bảng
+          if (valueA !== valueB) {
+            table1.setCellMeta(rowIndex, col, "className", "htCellDifference");
+            table2.setCellMeta(rowIndex, col, "className", "htCellDifference");
+          } else {
+            // Nếu không có sự khác biệt, xóa lớp bôi đỏ
+            table1.setCellMeta(rowIndex, col, "className", "");
+            table2.setCellMeta(rowIndex, col, "className", "");
           }
         }
-      }
-      // setDataA([...data1]); // Cập nhật bảng A
-      // setDataB([...data2]); // Cập nhật bảng B
-      // Render lại bảng sau khi thay đổi
+      });
+
+      // Render lại bảng
       table1.render();
       table2.render();
-      // Log các dòng khác biệt
-      if (missingInA.length > 0) {
-        console.log("Các dòng khác biệt trong bảng B (không có trong bảng A):");
-        missingInA.forEach((index) => {
-          console.log(`Dòng khác biệt ở chỉ mục ${index}:`, data2[index]);
-        });
-      }
-  
-      if (missingInB.length > 0) {
-        console.log("Các dòng khác biệt trong bảng A (không có trong bảng B):");
-        missingInB.forEach((index) => {
-          console.log(`Dòng khác biệt ở chỉ mục ${index}:`, data1[index]);
-        });
-      }
     }
   };
-  
-  
-  React.useEffect(() => {
-    if (hotTableRef1.current && hotTableRef2.current) {
-      const table1 = hotTableRef1.current.hotInstance;
-      const table2 = hotTableRef2.current.hotInstance;
 
-      if (!table1 || !table2) return;
-
-      const data1 = table1.getData();
-      const data2 = table2.getData();
-      const maxRows = Math.max(data1.length, data2.length);
-
-      const differences: number[] = [];
-      for (let row = 0; row < maxRows; row++) {
-        for (let col = 0; col < data1[0].length; col++) {
-          const value1 = data1[row] ? data1[row][col] : null;
-          const value2 = data2[row] ? data2[row][col] : null;
-
-          if (value1 !== value2) {
-            if (!differences.includes(row)) {
-              differences.push(row);
-            }
-          }
-        }
-      }
-
-      if (hideIdenticalRows) {
-        table1.updateSettings({
-          hiddenRows: {
-            rows: Array.from({ length: data1.length }, (_, i) => i).filter(
-              (i) => !differences.includes(i)
-            ),
-            indicators: false,
-          },
-        });
-
-        table2.updateSettings({
-          hiddenRows: {
-            rows: Array.from({ length: data2.length }, (_, i) => i).filter(
-              (i) => !differences.includes(i)
-            ),
-            indicators: false,
-          },
-        });
-      } else {
-        table1.updateSettings({
-          hiddenRows: {
-            rows: [],
-            indicators: false,
-          },
-        });
-
-        table2.updateSettings({
-          hiddenRows: {
-            rows: [],
-            indicators: false,
-          },
-        });
-      }
-    }
-  }, [hideIdenticalRows, dataA, dataB]);
   return (
     <>
       <Head>
@@ -330,7 +332,7 @@ export default function OrdersPage() {
               alignItems: "center",
             }}
           >
-            <UploadButton content="Kho A" action={handleUploadA} />
+            <UploadButton content="EFFECT DATA" action={handleUploadA} />
             <Button
               startIcon={<CompareArrowsIcon />}
               onClick={compareData}
@@ -338,10 +340,10 @@ export default function OrdersPage() {
             >
               Đối chiếu
             </Button>
-            <UploadButton content="Kho B" action={handleUploadB} />
+            <UploadButton content="ERP DATA" action={handleUploadB} />
           </Stack>
         </Grid2>
-        <Grid2 size={12}>
+        {/* <Grid2 size={12}>
           <FormGroup style={{ width: "fit-content" }}>
             <FormControlLabel
               control={
@@ -353,7 +355,7 @@ export default function OrdersPage() {
               label="Ẩn các hàng giống nhau"
             />
           </FormGroup>
-        </Grid2>
+        </Grid2> */}
         <Grid2 container size={12}>
           <Grid2 size="grow">
             <HotTable

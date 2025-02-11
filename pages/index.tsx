@@ -16,7 +16,7 @@ import Head from "next/head";
 export default function HomePage() {
   return (
     <div>
-      <Head>
+      {/* <Head>
         <title>Tổng quan</title>
       </Head>
       <Grid2 container width="100%" spacing={2}>
@@ -67,7 +67,7 @@ export default function HomePage() {
         <Grid2 size={6}>
           
         </Grid2>
-      </Grid2>
+      </Grid2> */}
     </div>
   );
 }

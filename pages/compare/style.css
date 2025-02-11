@@ -11,3 +11,6 @@
   height: 1px;
   background-color: #eb837c 
 }
+.htRowMissing{
+  background-color: #eb837c !important;
+}
