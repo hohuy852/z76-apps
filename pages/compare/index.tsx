@@ -25,16 +25,16 @@ const convertExcelToSampleData_EFFECT = (
     reader.onload = (e) => {
       const data = new Uint8Array(e.target!.result as ArrayBuffer);
       const workbook = XLSX.read(data, { type: "array" });
-      console.log("workbook", workbook);
+      // console.log("workbook", workbook);
       const sheetName = workbook.SheetNames[0];
-      console.log("sheetName", sheetName);
+      // console.log("sheetName", sheetName);
       
       const worksheet = workbook.Sheets[sheetName];
       
       const jsonData = XLSX.utils.sheet_to_json<any[]>(worksheet, {
         header: 1,
       });
-      console.log(jsonData);
+      // console.log(jsonData);
       const formattedData = jsonData.slice(7).map((row) => {
         return row.slice(0, 7);
       });
@@ -55,10 +55,10 @@ const convertExcelToSampleData_ERP = (
     reader.onload = (e) => {
       const data = new Uint8Array(e.target!.result as ArrayBuffer);
       const workbook = XLSX.read(data, { type: "array" });
-      console.log("workbook", workbook);
+      // console.log("workbook", workbook);
       
       const sheetName = workbook.SheetNames[0];
-      console.log("sheetName", sheetName);
+      // console.log("sheetName", sheetName);
       const worksheet = workbook.Sheets[sheetName];
       const jsonData = XLSX.utils.sheet_to_json<any[]>(worksheet, {
         header: 1,
@@ -108,7 +108,7 @@ export default function OrdersPage() {
         resetTable(hotTableRef1); // Reset bảng trước khi nhập dữ liệu mới
         const formattedData = await convertExcelToSampleData_EFFECT(file);
         setDataA(formattedData);
-        console.log(formattedData);
+        // console.log(formattedData);
       } catch (error) {
         console.error("Error uploading file A:", error);
       }
@@ -157,6 +157,44 @@ export default function OrdersPage() {
     }
   }, [hotTableRef1, hotTableRef2]);
 
+
+  function synchronizeData(DATA_A: (string | number | null)[][], DATA_B: (string | number | null)[][]) {
+    // Xác định độ dài lớn nhất giữa DATA_A và DATA_B
+    const maxLength = Math.max(DATA_A.length, DATA_B.length);
+
+    // Tạo một dòng null với độ dài phù hợp
+    const createNullRow = (length: number): (null | (string | number | null))[] => Array(length).fill("-");
+
+    // Đồng bộ hóa DATA_A
+    while (DATA_A.length < maxLength) {
+      let nulRow = createNullRow(DATA_A[0].length);
+      nulRow[0]  = DATA_A[0][0];
+      DATA_A.push(nulRow);
+    }
+
+    // Đồng bộ hóa DATA_B
+    while (DATA_B.length < maxLength) {
+      let nulRow = createNullRow(DATA_B[0].length);
+      nulRow[0]  = DATA_B[0][0];
+      DATA_B.push(nulRow);
+    }
+
+    return { DATA_A, DATA_B };
+}
+
+// Hàm chuyển đổi các phần tử string số sang number
+const convertNumericStrings = (data: Array<Array<string | number | null>>) => {
+  return data.map(row => 
+      row.map(element => {
+          if (typeof element === 'string') {
+              const numberValue = Number(element);
+              return isNaN(numberValue) ? element : numberValue;
+          }
+          return element;
+      })
+  );
+};
+
   const compareData = () => {
     if (hotTableRef1.current && hotTableRef2.current) {
       const table1 = hotTableRef1.current.hotInstance;
@@ -165,48 +203,20 @@ export default function OrdersPage() {
       if (!table1 || !table2) return;
   
       // Lấy dữ liệu từ 2 bảng
-      const effectData = table1.getData();
-      const erpData = table2.getData();
-  
-      // --- Xử lý dữ liệu cho bảng Effect (table1) ---
-      const EffectmergedMap = new Map<string, any>();
-      effectData.forEach((row) => {
-        const key = row[0];
-        if (EffectmergedMap.has(key)) {
-          const existing = EffectmergedMap.get(key);
-          // Cộng dồn giá trị số từ index 3 đến 6
-          for (let i = 3; i <= 6; i++) {
-            existing[i] += row[i];
-          }
-        } else {
-          // Clone row để không thay đổi dữ liệu gốc
-          const newRow = [...row];
-          if (typeof newRow[1] === "string") {
-            newRow[1] = newRow[1].split("{")[0];
-          }
-          EffectmergedMap.set(key, newRow);
-        }
-      });
-      const data1 = Array.from(EffectmergedMap.values());
-  
-      // --- Xử lý dữ liệu cho bảng ERP (table2) ---
-      const ERPmergedMap = new Map<string, any>();
-      erpData.forEach((row) => {
-        const key = row[0];
-        if (ERPmergedMap.has(key)) {
-          const existing = ERPmergedMap.get(key);
-          for (let i = 3; i <= 6; i++) {
-            existing[i] += row[i];
-          }
-        } else {
-          const newRow = [...row];
-          if (typeof newRow[1] === "string") {
-            newRow[1] = newRow[1].split("{")[0];
-          }
-          ERPmergedMap.set(key, newRow);
-        }
-      });
-      const data2 = Array.from(ERPmergedMap.values());
+      const effect_data = table1.getData();
+      const erp_data = table2.getData();
+
+      const data1 = convertNumericStrings(effect_data);
+      const data2 = convertNumericStrings(erp_data);
+
+
+      // Bỏ đi các dòng trống
+      const allDataFromMapA = data1.filter(sublist => 
+        sublist.some((element: string | number | null) => element !== null)
+      );
+      const allDataFromMapB = data2.filter(sublist => 
+        sublist.some((element: string | number | null) => element !== null)
+      );
   
       // --- Ghép dữ liệu từ 2 bảng theo mã hàng (key) ---
       const mapA = new Map(data1.map((row) => [row[0], row]));
@@ -217,10 +227,43 @@ export default function OrdersPage() {
       const newData1: any[] = [];
       const newData2: any[] = [];
   
+      let duplicateComapreResultA = new Map<string, any>()
+      let duplicateComapreResultB = new Map<string, any>()
+
       allCodes.forEach((code) => {
         if (mapA.has(code) && mapB.has(code)) {
-          newData1.push(mapA.get(code));
-          newData2.push(mapB.get(code));
+          // Lấy tất cả data của mã hàng có trong mapA và mapB
+          const tempFilteredDataA = allDataFromMapA.filter(row => row[0] === code);
+          const tempFilteredDataB = allDataFromMapB.filter(row => row[0] === code);
+          let lengthDiff = tempFilteredDataA.length != tempFilteredDataB.length? true:false;
+          let tempSumA: any[] = [0,0,0,0];
+          let tempSumB: any[] = [0,0,0,0];
+
+          // Đồng bộ data của cùng 1 mã hàng ở mapA và mapB(nếu khác length thêm dòng trống)
+          synchronizeData(tempFilteredDataA, tempFilteredDataB);
+
+          // Add vào newData
+          tempFilteredDataA.forEach(row => {
+            newData1.push(row);
+            for (let col = 0; col < 4; col++) {
+              if(typeof row[col+3] === "number") {
+                tempSumA[col] += row[col+3];
+              }
+            }
+          });
+          tempFilteredDataB.forEach(row => {
+            newData2.push(row);
+            for (let col = 0; col < 4; col++) {
+              if(typeof row[col+3] === "number") {
+                tempSumB[col] += row[col+3];
+              }
+            }
+          });
+          if(lengthDiff) {
+            duplicateComapreResultA.set(code, tempSumA)
+            duplicateComapreResultB.set(code, tempSumB)
+          }     
+
         } else if (mapA.has(code)) {
           newData1.push(mapA.get(code));
           newData2.push(Array(data1[0].length).fill(null)); // Thêm dòng trống cho bảng ERP (table2)
@@ -234,8 +277,8 @@ export default function OrdersPage() {
       table1.loadData(newData1);
       table2.loadData(newData2);
   
-      console.log("Total rows in newData1:", newData1.length);
-      console.log("Total rows in newData2:", newData2.length);
+      // console.log("Total rows in newData1:", newData1.length);
+      // console.log("Total rows in newData2:", newData2.length);
   
       // --- Cập nhật chiều cao dòng (rowHeights) ban đầu ---
       const rowHeightsA: number[] =
@@ -246,30 +289,30 @@ export default function OrdersPage() {
       // Cập nhật cho bảng Effect (table1): Các dòng trống (không có dữ liệu ở bảng ERP)
       newData1.forEach((row, rowIndex) => {
         if (row.every((cell: any) => cell === null)) {
-          for (let col = 0; col < row.length; col++) {
+          for (let col = 3; col < row.length; col++) {
             table1.setCellMeta(rowIndex, col, "className", "htRowMissing");
           }
           // Lấy chiều cao của dòng tương ứng từ bảng ERP (table2)
           const rowHeight = table2.getRowHeight(rowIndex);
           rowHeightsA[rowIndex] = rowHeight;
-          console.log(`table1 - row ${rowIndex}:`, rowHeight);
+          // console.log(`table1 - row ${rowIndex}:`, rowHeight);
         }
       });
   
       // Cập nhật cho bảng ERP (table2): Các dòng trống (không có dữ liệu ở bảng Effect)
       newData2.forEach((row, rowIndex) => {
         if (row.every((cell: any) => cell === null)) {
-          for (let col = 0; col < row.length; col++) {
+          for (let col = 3; col < row.length; col++) {
             table2.setCellMeta(rowIndex, col, "className", "htRowMissing");
           }
           const rowHeight = table1.getRowHeight(rowIndex);
           rowHeightsB[rowIndex] = rowHeight;
-          console.log(`table2 - row ${rowIndex}:`, rowHeight);
+          // console.log(`table2 - row ${rowIndex}:`, rowHeight);
         }
       });
   
-      console.log("Final rowHeightsA:", rowHeightsA);
-      console.log("Final rowHeightsB:", rowHeightsB);
+      // console.log("Final rowHeightsA:", rowHeightsA);
+      // console.log("Final rowHeightsB:", rowHeightsB);
   
       // Cập nhật lại settings cho cả hai bảng (1 lần duy nhất)
       table1.updateSettings({ rowHeights: rowHeightsA });
@@ -277,15 +320,39 @@ export default function OrdersPage() {
   
       // --- So sánh từng ô và đánh dấu sự khác biệt ---
       newData1.forEach((row, rowIndex) => {
-        for (let col = 0; col < row.length; col++) {
-          const valueA = row[col];
-          const valueB = newData2[rowIndex] ? newData2[rowIndex][col] : null;
-          if (valueA !== valueB) {
-            table1.setCellMeta(rowIndex, col, "className", "htCellDifference");
-            table2.setCellMeta(rowIndex, col, "className", "htCellDifference");
-          } else {
-            table1.setCellMeta(rowIndex, col, "className", "");
-            table2.setCellMeta(rowIndex, col, "className", "");
+        if ((row[0] != null) && duplicateComapreResultA.has(row[0]) && duplicateComapreResultB.has(row[0])) {
+          for (let col = 0; col < row.length; col++) {
+            if(duplicateComapreResultA.get(row[0])[col] != duplicateComapreResultB.get(row[0])[col]) {
+              if(col < 3) {
+                table1.setCellMeta(rowIndex, col, "className", "htCellDifferenceNoColor");
+                table2.setCellMeta(rowIndex, col, "className", "htCellDifferenceNoColor");
+              } else {
+                table1.setCellMeta(rowIndex, col+3, "className", "htCellDifference");
+                table2.setCellMeta(rowIndex, col+3, "className", "htCellDifference");
+              }
+                
+            } else {
+              table1.setCellMeta(rowIndex, col, "className", "");
+              table2.setCellMeta(rowIndex, col, "className", "");
+            }
+          }
+        } else {
+
+          for (let col = 0; col < row.length; col++) {
+            const valueA = row[col];
+            const valueB = newData2[rowIndex] ? newData2[rowIndex][col] : null;
+            if (valueA !== valueB) {
+              if(col < 3) {
+                table1.setCellMeta(rowIndex, col, "className", "htCellDifferenceNoColor");
+                table2.setCellMeta(rowIndex, col, "className", "htCellDifferenceNoColor");
+              } else {
+                table1.setCellMeta(rowIndex, col, "className", "htCellDifference");
+                table2.setCellMeta(rowIndex, col, "className", "htCellDifference");
+              }
+            } else {
+              table1.setCellMeta(rowIndex, col, "className", "");
+              table2.setCellMeta(rowIndex, col, "className", "");
+            }
           }
         }
       });
@@ -341,7 +408,7 @@ export default function OrdersPage() {
           let hasDifference = false;
           for (let col = 0; col < newData1[rowIndex].length; col++) {
             const meta = table1.getCellMeta(rowIndex, col);
-            if (meta && typeof meta.className === "string" && meta.className.indexOf("htCellDifference") !== -1) {
+            if (meta && typeof meta.className === "string" && (meta.className.indexOf("htCellDifference") || meta.className.indexOf("htCellDifferenceNoColor")) !== -1) {
               hasDifference = true;
               break;
             }
