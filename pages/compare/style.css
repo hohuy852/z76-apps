@@ -1,6 +1,11 @@
 .htCellDifference {
   background-color: #eb837c !important;
 }
+
+.htCellDifferenceNoColor {
+  background-color: #ffffff !important;
+}
+
 .scroll-diff-container {
   position: relative;
   width: 30px;
