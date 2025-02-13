@@ -163,18 +163,18 @@ export default function OrdersPage() {
     const maxLength = Math.max(DATA_A.length, DATA_B.length);
 
     // Tạo một dòng null với độ dài phù hợp
-    const createNullRow = (length: number): (null | (string | number | null))[] => Array(length).fill("-");
+    const createDummyRow = (length: number): (null | (string | number | null))[] => Array(length).fill("-");
 
     // Đồng bộ hóa DATA_A
     while (DATA_A.length < maxLength) {
-      let nulRow = createNullRow(DATA_A[0].length);
+      let nulRow = createDummyRow(DATA_A[0].length);
       nulRow[0]  = DATA_A[0][0];
       DATA_A.push(nulRow);
     }
 
     // Đồng bộ hóa DATA_B
     while (DATA_B.length < maxLength) {
-      let nulRow = createNullRow(DATA_B[0].length);
+      let nulRow = createDummyRow(DATA_B[0].length);
       nulRow[0]  = DATA_B[0][0];
       DATA_B.push(nulRow);
     }
@@ -319,30 +319,40 @@ const convertNumericStrings = (data: Array<Array<string | number | null>>) => {
       table2.updateSettings({ rowHeights: rowHeightsB });
   
       // --- So sánh từng ô và đánh dấu sự khác biệt ---
+      // Duyệt các cột trong hàng
+      // Nếu các cột khác nhau
+      // + Ở các hàng số lượng => đánh dấu khác + tô màu
+      // + Ở các hàng chữ => đánh dấu khác + không tô màu
       newData1.forEach((row, rowIndex) => {
+        // Trường hợp 1 mã hàng tồn tại trên nhiều dòng
+        // Lấy kết quả tổng của các mã hàng đã tính để compare
         if ((row[0] != null) && duplicateComapreResultA.has(row[0]) && duplicateComapreResultB.has(row[0])) {
           for (let col = 0; col < row.length; col++) {
-            if(duplicateComapreResultA.get(row[0])[col] != duplicateComapreResultB.get(row[0])[col]) {
-              if(col < 3) {
+            if ((col < 3) || (col > 6)) {
+              const valueA = row[col];
+              const valueB = newData2[rowIndex] ? newData2[rowIndex][col] : null;
+              if (valueA !== valueB) {
                 table1.setCellMeta(rowIndex, col, "className", "htCellDifferenceNoColor");
                 table2.setCellMeta(rowIndex, col, "className", "htCellDifferenceNoColor");
-              } else {
-                table1.setCellMeta(rowIndex, col+3, "className", "htCellDifference");
-                table2.setCellMeta(rowIndex, col+3, "className", "htCellDifference");
               }
-                
             } else {
-              table1.setCellMeta(rowIndex, col, "className", "");
-              table2.setCellMeta(rowIndex, col, "className", "");
+              if(duplicateComapreResultA.get(row[0])[col-3] != duplicateComapreResultB.get(row[0])[col-3]) {
+                table1.setCellMeta(rowIndex, col, "className", "htCellDifference");
+                table2.setCellMeta(rowIndex, col, "className", "htCellDifference");     
+              } else {
+                table1.setCellMeta(rowIndex, col, "className", "");
+                table2.setCellMeta(rowIndex, col, "className", "");
+              }
             }
           }
+        // Các trường hợp 1 mã hàng chỉ có 1 dòng
+        // Lấy kết quả số lượng của từng cột để compare
         } else {
-
           for (let col = 0; col < row.length; col++) {
             const valueA = row[col];
             const valueB = newData2[rowIndex] ? newData2[rowIndex][col] : null;
             if (valueA !== valueB) {
-              if(col < 3) {
+              if ((col < 3) || (col > 6))  {
                 table1.setCellMeta(rowIndex, col, "className", "htCellDifferenceNoColor");
                 table2.setCellMeta(rowIndex, col, "className", "htCellDifferenceNoColor");
               } else {
