@@ -1,2 +1,2 @@
-const baseUrl = "https://7bad-116-96-45-233.ngrok-free.app/api";
+const baseUrl = "https://offices-columnists-half-implement.trycloudflare.com/api";
 export default baseUrl;
