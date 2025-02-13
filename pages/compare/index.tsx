@@ -161,156 +161,208 @@ export default function OrdersPage() {
     if (hotTableRef1.current && hotTableRef2.current) {
       const table1 = hotTableRef1.current.hotInstance;
       const table2 = hotTableRef2.current.hotInstance;
-
+  
       if (!table1 || !table2) return;
-
-      let effectData = table1.getData();
-      let erpData = table2.getData();
-
+  
+      // Lấy dữ liệu từ 2 bảng
+      const effectData = table1.getData();
+      const erpData = table2.getData();
+  
+      // --- Xử lý dữ liệu cho bảng Effect (table1) ---
       const EffectmergedMap = new Map<string, any>();
-      effectData.forEach(row => {
-          const key = row[0];
-
-          if (EffectmergedMap.has(key)) {
-              let existing = EffectmergedMap.get(key);
-
-              // Sum numeric values (index 3 to 6)
-              for (let i = 3; i <= 6; i++) {
-                  existing[i] += row[i];
-              }
-          } else {
-              // Clone the row to avoid modifying the original input
-              let newRow = [...row];
-
-              // Replace "table{khoX}" with "table"
-              if (typeof newRow[1] === "string") {
-                  newRow[1] = newRow[1].split("{")[0];
-              }
-
-              EffectmergedMap.set(key, newRow);
-          }
-      });
-
-      // Convert Map back to an array
-      const data1 = Array.from(EffectmergedMap.values());
-
-      const ERPmergedMap = new Map<string, any>();
-      erpData.forEach(row => {
+      effectData.forEach((row) => {
         const key = row[0];
-
-        if (ERPmergedMap.has(key)) {
-            let existing = ERPmergedMap.get(key);
-
-            // Sum numeric values (index 3 to 6)
-            for (let i = 3; i <= 6; i++) {
-                existing[i] += row[i];
-            }
+        if (EffectmergedMap.has(key)) {
+          const existing = EffectmergedMap.get(key);
+          // Cộng dồn giá trị số từ index 3 đến 6
+          for (let i = 3; i <= 6; i++) {
+            existing[i] += row[i];
+          }
         } else {
-            // Clone the row to avoid modifying the original input
-            let newRow = [...row];
-
-            // Replace "table{khoX}" with "table"
-            if (typeof newRow[1] === "string") {
-                newRow[1] = newRow[1].split("{")[0];
-            }
-
-            ERPmergedMap.set(key, newRow);
+          // Clone row để không thay đổi dữ liệu gốc
+          const newRow = [...row];
+          if (typeof newRow[1] === "string") {
+            newRow[1] = newRow[1].split("{")[0];
+          }
+          EffectmergedMap.set(key, newRow);
         }
       });
-
-      // Convert Map back to an array
+      const data1 = Array.from(EffectmergedMap.values());
+  
+      // --- Xử lý dữ liệu cho bảng ERP (table2) ---
+      const ERPmergedMap = new Map<string, any>();
+      erpData.forEach((row) => {
+        const key = row[0];
+        if (ERPmergedMap.has(key)) {
+          const existing = ERPmergedMap.get(key);
+          for (let i = 3; i <= 6; i++) {
+            existing[i] += row[i];
+          }
+        } else {
+          const newRow = [...row];
+          if (typeof newRow[1] === "string") {
+            newRow[1] = newRow[1].split("{")[0];
+          }
+          ERPmergedMap.set(key, newRow);
+        }
+      });
       const data2 = Array.from(ERPmergedMap.values());
-
-
+  
+      // --- Ghép dữ liệu từ 2 bảng theo mã hàng (key) ---
       const mapA = new Map(data1.map((row) => [row[0], row]));
       const mapB = new Map(data2.map((row) => [row[0], row]));
-
-      // Lấy danh sách mã hàng duy nhất từ cả hai bảng
+  
+      // Lấy danh sách key duy nhất và sắp xếp
       const allCodes = [...new Set([...mapA.keys(), ...mapB.keys()])].sort();
-
       const newData1: any[] = [];
       const newData2: any[] = [];
-
+  
       allCodes.forEach((code) => {
         if (mapA.has(code) && mapB.has(code)) {
           newData1.push(mapA.get(code));
           newData2.push(mapB.get(code));
         } else if (mapA.has(code)) {
           newData1.push(mapA.get(code));
-          newData2.push(Array(data1[0].length).fill(null)); // Thêm hàng trống vào bảng B
+          newData2.push(Array(data1[0].length).fill(null)); // Thêm dòng trống cho bảng ERP (table2)
         } else {
-          newData1.push(Array(data2[0].length).fill(null)); // Thêm hàng trống vào bảng A
+          newData1.push(Array(data2[0].length).fill(null)); // Thêm dòng trống cho bảng Effect (table1)
           newData2.push(mapB.get(code));
         }
       });
-
-      // Cập nhật lại dữ liệu của bảng
+  
+      // Load dữ liệu mới vào bảng
       table1.loadData(newData1);
       table2.loadData(newData2);
-
-      // Bôi đỏ toàn bộ dòng trong bảng A khi không có trong bảng B
+  
+      console.log("Total rows in newData1:", newData1.length);
+      console.log("Total rows in newData2:", newData2.length);
+  
+      // --- Cập nhật chiều cao dòng (rowHeights) ban đầu ---
+      const rowHeightsA: number[] =
+        (table1.getSettings().rowHeights as number[]) || [];
+      const rowHeightsB: number[] =
+        (table2.getSettings().rowHeights as number[]) || [];
+  
+      // Cập nhật cho bảng Effect (table1): Các dòng trống (không có dữ liệu ở bảng ERP)
       newData1.forEach((row, rowIndex) => {
         if (row.every((cell: any) => cell === null)) {
           for (let col = 0; col < row.length; col++) {
             table1.setCellMeta(rowIndex, col, "className", "htRowMissing");
           }
-
-          // Lấy chiều cao của dòng có dữ liệu từ bảng còn lại (bảng B)
+          // Lấy chiều cao của dòng tương ứng từ bảng ERP (table2)
           const rowHeight = table2.getRowHeight(rowIndex);
-          const rowHeights =
-            (table1.getSettings().rowHeights as number[]) || []; // Chuyển đổi rowHeights thành number[]
-
-          rowHeights[rowIndex] = rowHeight; // Đặt chiều cao cho dòng trống trong bảng A
-
-          // Cập nhật lại chiều cao cho bảng A
-          table1.updateSettings({
-            rowHeights: rowHeights,
-          });
+          rowHeightsA[rowIndex] = rowHeight;
+          console.log(`table1 - row ${rowIndex}:`, rowHeight);
         }
       });
-
-      // Bôi đỏ toàn bộ dòng trong bảng B khi không có trong bảng A
+  
+      // Cập nhật cho bảng ERP (table2): Các dòng trống (không có dữ liệu ở bảng Effect)
       newData2.forEach((row, rowIndex) => {
         if (row.every((cell: any) => cell === null)) {
           for (let col = 0; col < row.length; col++) {
             table2.setCellMeta(rowIndex, col, "className", "htRowMissing");
           }
-
-          // Lấy chiều cao của dòng có dữ liệu từ bảng còn lại (bảng A)
           const rowHeight = table1.getRowHeight(rowIndex);
-          const rowHeights =
-            (table2.getSettings().rowHeights as number[]) || []; // Chuyển đổi rowHeights thành number[]
-
-          rowHeights[rowIndex] = rowHeight; // Đặt chiều cao cho dòng trống trong bảng B
-
-          // Cập nhật lại chiều cao cho bảng B
-          table2.updateSettings({
-            rowHeights: rowHeights,
-          });
+          rowHeightsB[rowIndex] = rowHeight;
+          console.log(`table2 - row ${rowIndex}:`, rowHeight);
         }
       });
-
-      // Bôi đỏ các ô khác biệt giữa hai bảng (bao gồm ô đầu tiên)
+  
+      console.log("Final rowHeightsA:", rowHeightsA);
+      console.log("Final rowHeightsB:", rowHeightsB);
+  
+      // Cập nhật lại settings cho cả hai bảng (1 lần duy nhất)
+      table1.updateSettings({ rowHeights: rowHeightsA });
+      table2.updateSettings({ rowHeights: rowHeightsB });
+  
+      // --- So sánh từng ô và đánh dấu sự khác biệt ---
       newData1.forEach((row, rowIndex) => {
         for (let col = 0; col < row.length; col++) {
           const valueA = row[col];
           const valueB = newData2[rowIndex] ? newData2[rowIndex][col] : null;
-
-          // Nếu có sự khác biệt, bôi đỏ các ô trong cả hai bảng
           if (valueA !== valueB) {
             table1.setCellMeta(rowIndex, col, "className", "htCellDifference");
             table2.setCellMeta(rowIndex, col, "className", "htCellDifference");
           } else {
-            // Nếu không có sự khác biệt, xóa lớp bôi đỏ
             table1.setCellMeta(rowIndex, col, "className", "");
             table2.setCellMeta(rowIndex, col, "className", "");
           }
         }
       });
-
+  
       // Render lại bảng
       table1.render();
       table2.render();
+  
+      // --- Hook sau khi render để cập nhật lại chiều cao của các dòng trống ---
+      // Cập nhật cho bảng ERP (table2)
+      table2.addHook("afterRender", function () {
+        let updated = false;
+        newData2.forEach((row, rowIndex) => {
+          if (row.every((cell: any) => cell === null)) {
+            const newHeight = table1.getRowHeight(rowIndex);
+            if (newHeight !== undefined && rowHeightsB[rowIndex] !== newHeight) {
+              rowHeightsB[rowIndex] = newHeight;
+              console.log(`afterRender - table2 row ${rowIndex}:`, newHeight);
+              updated = true;
+            }
+          }
+        });
+        if (updated) {
+          table2.updateSettings({ rowHeights: rowHeightsB });
+        }
+      });
+  
+      // Cập nhật cho bảng Effect (table1)
+      table1.addHook("afterRender", function () {
+        let updated = false;
+        newData1.forEach((row, rowIndex) => {
+          if (row.every((cell: any) => cell === null)) {
+            const newHeight = table2.getRowHeight(rowIndex);
+            if (newHeight !== undefined && rowHeightsA[rowIndex] !== newHeight) {
+              rowHeightsA[rowIndex] = newHeight;
+              console.log(`afterRender - table1 row ${rowIndex}:`, newHeight);
+              updated = true;
+            }
+          }
+        });
+        if (updated) {
+          table1.updateSettings({ rowHeights: rowHeightsA });
+        }
+      });
+  
+      // --- Hook bổ sung: Đồng bộ chiều cao của các dòng có cell khác biệt ---
+      // Với các dòng có cell được đánh dấu "htCellDifference", lấy chiều cao của dòng ở cả 2 bảng,
+      // sau đó đặt lại cho cả 2 bảng bằng giá trị lớn nhất.
+      table1.addHook("afterRender", function () {
+        let updated = false;
+        for (let rowIndex = 0; rowIndex < newData1.length; rowIndex++) {
+          // Kiểm tra xem dòng có chứa cell khác biệt hay không
+          let hasDifference = false;
+          for (let col = 0; col < newData1[rowIndex].length; col++) {
+            const meta = table1.getCellMeta(rowIndex, col);
+            if (meta && typeof meta.className === "string" && meta.className.indexOf("htCellDifference") !== -1) {
+              hasDifference = true;
+              break;
+            }
+          }
+          if (hasDifference) {
+            const height1 = table1.getRowHeight(rowIndex);
+            const height2 = table2.getRowHeight(rowIndex);
+            const newHeight = Math.max(height1 || 0, height2 || 0);
+            if (rowHeightsA[rowIndex] !== newHeight || rowHeightsB[rowIndex] !== newHeight) {
+              rowHeightsA[rowIndex] = newHeight;
+              rowHeightsB[rowIndex] = newHeight;
+              console.log(`afterRender (difference equalize) - row ${rowIndex}:`, newHeight);
+              updated = true;
+            }
+          }
+        }
+        if (updated) {
+          table1.updateSettings({ rowHeights: rowHeightsA });
+          table2.updateSettings({ rowHeights: rowHeightsB });
+        }
+      });
     }
   };
 
