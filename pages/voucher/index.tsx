@@ -1,5 +1,6 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import baseUrl from '@/hostingConfig';
+
 const UpdateExcelPage: React.FC = () => {
   const [taxFile, setTaxFile] = useState<File | null>(null);
   const [detailFile, setDetailFile] = useState<File | null>(null);
@@ -45,6 +46,7 @@ const UpdateExcelPage: React.FC = () => {
       }
 
       const blob = await response.blob();
+      // Kiểm tra MIME type (nếu cần)
       const url = window.URL.createObjectURL(blob);
       setDownloadUrl(url);
     } catch (err: any) {
@@ -83,7 +85,8 @@ const UpdateExcelPage: React.FC = () => {
       {error && <p className="error">{error}</p>}
       {downloadUrl && (
         <div className="download">
-          <a href={downloadUrl} download="Updated_Tax_Report.xlsx">
+          {/* Đổi tên file tải về có đuôi .zip */}
+          <a href={downloadUrl} download="Updated_Tax_Reports.zip">
             Tải file kết quả về
           </a>
         </div>
