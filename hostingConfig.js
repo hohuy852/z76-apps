@@ -1,2 +1,2 @@
-const baseUrl = "https://lease-reasonably-fotos-admit.trycloudflare.com/api";
+const baseUrl = "https://dailysontuvoc.com/api";
 export default baseUrl;
