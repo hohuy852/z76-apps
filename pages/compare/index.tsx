@@ -260,8 +260,8 @@ const convertNumericStrings = (data: Array<Array<string | number | null>>) => {
             }
           });
           if(lengthDiff) {
-            duplicateComapreResultA.set(code, tempSumA)
-            duplicateComapreResultB.set(code, tempSumB)
+            duplicateComapreResultA.set(String(code), tempSumA)
+            duplicateComapreResultB.set(String(code), tempSumB)
           }     
 
         } else if (mapA.has(code)) {
