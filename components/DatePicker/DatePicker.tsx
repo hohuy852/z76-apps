@@ -13,7 +13,6 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange }) => {
   useEffect(() => {
     if (datePickerRef.current) {
       flatpickr(datePickerRef.current, {
-        dateFormat: "d/m/Y", // Định dạng ngày dd/mm/yyyy
         defaultDate: value,
         onChange: (selectedDates, dateStr) => {
           onChange(dateStr); // Gửi ngày được chọn về component cha
