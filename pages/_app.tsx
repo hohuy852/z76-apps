@@ -61,11 +61,11 @@ const NAVIGATION: Navigation = [
   //   title: 'Người dùng',
   //   icon: <GroupIcon />,
   // },
-  // {
-  //   segment: 'permission',
-  //   title: 'Quản lý truy cập',
-  //   icon: <RecentActorsIcon />,
-  // },
+  {
+    segment: 'permission',
+    title: 'Quản lý truy cập',
+    icon: <RecentActorsIcon />,
+  },
 ];
 
 const BRANDING = {

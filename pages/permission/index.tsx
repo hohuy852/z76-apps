@@ -14,47 +14,25 @@ import Chip from "@mui/material/Chip";
 import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
-import MenuItem from "@mui/material/MenuItem";
 import Button from "@mui/material/Button";
 import Head from "next/head";
-import Autocomplete from '@mui/material/Autocomplete';
+import Checkbox from "@mui/material/Checkbox";
+import FormGroup from "@mui/material/FormGroup";
+import FormControlLabel from "@mui/material/FormControlLabel";
 function createData(
   id: number,
-  position: string,
-  department: string,
-  status: string,
-
+  username: string,
+  fullname: string,
+  storeManagement: string[]
 ) {
-  return { id, position, department, status };
+  return { id, username, fullname, storeManagement };
 }
 
 const initialRows = [
-  createData(
-    1,
-    "Kế toán viên",
-    "Phòng kế toán",
-    "Active",
-  ),
-  createData(
-    2,
-    "Kế toán viên",
-    "Phòng kế toán",
-    "Inactive",
-  ),
-  createData(
-    3,
-    "Kế toán viên",
-    "Phòng kế toán",
-    "Pending",
-  ),
-  createData(
-    4,
-    "Kế toán viên",
-    "Phòng kế toán",
-    "Pending",
-  ),
+  createData(1, "User A", "Nguyễn Văn A", ["1", "3", "8","9"]),
+  createData(2, "User B", "Nguyễn Văn B", ["4", "5"]),
 ];
-
+const storeOptions = ["1", "3", "4", "5", "8", "9"];
 export default function BasicTable() {
   const [rows, setRows] = React.useState(initialRows);
   const [open, setOpen] = React.useState(false);
@@ -62,6 +40,12 @@ export default function BasicTable() {
 
   const handleOpen = (row: any) => {
     setSelectedRow({ ...row });
+    setOpen(true);
+    const availableStores = row.storeManagement.filter((store: string) =>
+      storeOptions.includes(store)
+    );
+  
+    setSelectedRow({ ...row, storeManagement: availableStores });
     setOpen(true);
   };
 
@@ -90,30 +74,21 @@ export default function BasicTable() {
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
             <TableRow>
-              <TableCell align="left">Chức vụ</TableCell>
-              <TableCell align="center">Phòng ban</TableCell>
-              <TableCell align="center">Trạng thái</TableCell>
+              <TableCell align="left">Tài khoản</TableCell>
+              <TableCell align="center">Tên người duyệt</TableCell>
+              <TableCell align="center">Kho quản lý</TableCell>
               <TableCell align="center">Hành động</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {rows.map((row) => (
               <TableRow key={row.id}>
-                <TableCell align="left">{row.position}</TableCell>
-                <TableCell align="center">{row.department}</TableCell>
+                <TableCell align="left">{row.username}</TableCell>
+                <TableCell align="center">{row.fullname}</TableCell>
                 <TableCell align="center">
-                  <Chip
-                    label={row.status}
-                    color={
-                      row.status === "Active"
-                        ? "success"
-                        : row.status === "Pending"
-                          ? "warning"
-                          : row.status === "Inactive"
-                            ? "default"
-                            : "error"
-                    }
-                  />
+                  {row.storeManagement.map((store, index) => (
+                    <Chip key={index} label={store} sx={{ m: 0.5 }} />
+                  ))}
                 </TableCell>
                 <TableCell align="center">
                   <Stack direction="row" spacing={1} justifyContent="center">
@@ -136,7 +111,6 @@ export default function BasicTable() {
           </TableBody>
         </Table>
 
-        {/* MODAL */}
         <Modal open={open} onClose={handleClose}>
           <Box
             sx={{
@@ -156,43 +130,46 @@ export default function BasicTable() {
               <>
                 <TextField
                   fullWidth
-                  label="Chức vụ"
+                  label="Tài khoản"
                   margin="dense"
-                  value={selectedRow.position}
-                  onChange={(e) =>
-                    setSelectedRow({ ...selectedRow, position: e.target.value })
-                  }
+                  value={selectedRow.username}
+                  disabled
                 />
                 <TextField
                   fullWidth
-                  label="Phòng ban"
+                  label="Tên người duyệt"
                   margin="dense"
-                  value={selectedRow.department}
-                  onChange={(e) =>
-                    setSelectedRow({ ...selectedRow, department: e.target.value })
-                  }
+                  value={selectedRow.fullname}
+                  disabled
                 />
-                <TextField
-                  fullWidth
-                  label="Trạng thái"
-                  margin="dense"
-                  select
-                  value={selectedRow.status}
-                  onChange={(e) =>
-                    setSelectedRow({ ...selectedRow, status: e.target.value })
-                  }
-                >
-                  {["Active", "Pending", "Inactive", "Banned"].map((option) => (
-                    <MenuItem key={option} value={option}>
-                      {option}
-                    </MenuItem>
-                  ))}
-                </TextField>
-                <Autocomplete
-                    disablePortal
-                    options={[{label: "Đối chiếu thẻ kho"}, {label: "Bảng kê hoàn thuế"}]}
-                    renderInput={(params) => <TextField {...params} label="Chức năng" />}
+
+                {/* Store Management Checkbox Group */}
+                <h4>Kho quản lý</h4>
+                <FormGroup>
+                  {storeOptions.map((store) => (
+                    <FormControlLabel
+                      key={store}
+                      control={
+                        <Checkbox
+                          checked={selectedRow.storeManagement.includes(store)}
+                          onChange={(e) => {
+                            const updatedStores = e.target.checked
+                              ? [...selectedRow.storeManagement, store]
+                              : selectedRow.storeManagement.filter(
+                                  (s:any) => s !== store
+                                );
+                            setSelectedRow({
+                              ...selectedRow,
+                              storeManagement: updatedStores,
+                            });
+                          }}
+                        />
+                      }
+                      label={`Kho ${store}`}
                     />
+                  ))}
+                </FormGroup>
+
                 <Stack
                   direction="row"
                   spacing={2}
