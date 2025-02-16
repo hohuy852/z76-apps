@@ -102,6 +102,7 @@ export default function OrdersPage() {
   const [dataB, setDataB] = React.useState<(boolean | string | number)[][]>([]);
   const [open, setOpen] = React.useState(false);
   const [detailOpen, setDetailOpen] = React.useState(false);
+  const [approveOpen, setApproveOpen] = React.useState(false);
   const [rowData, setRowData] = React.useState<RowData | null>(null);
   const [cellContent, setCellContent] = React.useState<string>("");
   const [fullData, setFullData] = React.useState<any[]>([]);
@@ -114,7 +115,6 @@ export default function OrdersPage() {
   const [startDate, setStartDate] = React.useState<string>(currentDate);
   const [endDate, setEndDate] = React.useState<string>(currentDate);
 
-  
   const fetchData = async () => {
     setLoading(true);
 
@@ -122,7 +122,7 @@ export default function OrdersPage() {
       const vtId = [3];
       const btpId = [4];
       console.log(startDate, endDate);
-      
+
       // Hàm gọi API chung
       const fetchFromAPI = async (idKho: number, url: string) => {
         const response = await fetch(url, {
@@ -162,13 +162,13 @@ export default function OrdersPage() {
       // Gộp dữ liệu từ tất cả API lại thành 1 mảng
       const allResults = [...vtpResults.flat(), ...btpResults.flat()];
       setFullData(allResults);
-      const formattedData: any[][] = allResults.map(item => {
+      const formattedData: any[][] = allResults.map((item) => {
         // Chuyển đổi trường chiTietNhapXuat sang chuỗi JSON
         const transformedItem = {
           ...item,
-          chiTietNhapXuat: JSON.stringify(item.chiTietNhapXuat)
+          chiTietNhapXuat: JSON.stringify(item.chiTietNhapXuat),
         };
-        
+
         // Trả về một mảng chứa các giá trị của object đã chuyển đổi
         return Object.values(transformedItem);
       });
@@ -254,12 +254,11 @@ export default function OrdersPage() {
   const onCellClick = (row: number, col: number) => {
     console.log("Click cell at row:", row, "col:", col);
     console.log("Current fullData:", fullData);
-  
+
     const rowObject = fullData[row];
     setRowData(rowObject);
     setDetailOpen(true);
   };
-  
 
   React.useEffect(() => {
     const table1Container =
@@ -671,13 +670,22 @@ export default function OrdersPage() {
             >
               Đối chiếu
             </Button>
-            <Button
-              startIcon={<CloudUploadIcon />}
-              onClick={handleOpen}
-              variant="contained"
-            >
-              ERP DATA
-            </Button>
+            <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+              <Button
+                startIcon={<CloudUploadIcon />}
+                onClick={handleOpen}
+                variant="contained"
+              >
+                ERP DATA
+              </Button>
+              <Button
+                startIcon={<CloudUploadIcon />}
+                onClick={() => setApproveOpen(true)}
+                variant="contained"
+              >
+                Duyệt thẻ kho
+              </Button>
+            </Stack>
           </Stack>
         </Grid2>
         {/* <Grid2 size={12}>
@@ -798,13 +806,14 @@ export default function OrdersPage() {
             </HotTable>
           </Grid2>
         </Grid2>
+        {/* MODAL Chi tiết nhập xuất */}
         <Modal
           open={detailOpen}
           onClose={() => setDetailOpen(false)}
           aria-labelledby="modal-title"
           aria-describedby="modal-description"
         >
-         <Box
+          <Box
             sx={{
               position: "absolute",
               top: "50%",
@@ -816,89 +825,92 @@ export default function OrdersPage() {
               borderRadius: 2,
             }}
           >
-          <h2 id="modal-title">Chi tiết nhập xuất</h2>
-          <div id="modal-description" style={{minHeight: "300px", width:"900px" }}>
-          {rowData ? (
-            <>
-              <p>
-                <strong>Mã hàng:</strong> {rowData.ma}
-              </p>
-              <p>
-                <strong>Tên hàng:</strong> {rowData.ten}
-              </p>
-              <p>
-                <strong>Đơn vị tính:</strong> {rowData.tenDonViTinh}
-              </p>
-           </>
-          ) : (
-            <p>Không có dữ liệu</p>
-          )}
-          {rowData && rowData.chiTietNhapXuat.length > 0 ? (
-            <>
-             <HotTable
-             data={rowData.chiTietNhapXuat.map(({ id, idKho, ma, ...rest }) => Object.values(rest))}
-             colWidths={[
-               200, 200, 200, 200, 150, 150,  150,350
-             ]}
-             height="300"
-             width="100%"
-             colHeaders={data.detailHeader}
-             contextMenu={[
-               "cut",
-               "copy",
-               "---------",
-               "row_above",
-               "row_below",
-               "remove_row",
-               "---------",
-               "alignment",
-               "make_read_only",
-               "clear_column",
-             ]}
-             dropdownMenu={true}
-             hiddenColumns={{
-               indicators: true,
-             }}
-             multiColumnSorting={true}
-             filters={true}
-             rowHeaders={true}
-             headerClassName="htLeft"
-             manualRowMove={true}
-             autoWrapRow={true}
-             autoWrapCol={true}
-             manualRowResize={true}
-             manualColumnResize={true}
-             navigableHeaders={true}
-             licenseKey="non-commercial-and-evaluation"
-             className="ht-theme-main" 
-             autoRowSize={true}
-           >
-             <HotColumn data={0} />
-             <HotColumn data={1} />
-             <HotColumn data={2} />
-             <HotColumn data={3} />
-             <HotColumn data={4} />
-             <HotColumn data={5} />
-             <HotColumn data={6} />
-             <HotColumn data={7} />
-           </HotTable>
-           </>
-          ) : (
-            <p>Không có dữ liệu chi tiết nhập xuất</p>
-          )}
-          </div>
-         
-          <Stack
-                direction="row"
-                spacing={2}
-                sx={{ mt: 2 }}
-                justifyContent="flex-end"
-              >
-                <Button onClick={()=> setDetailOpen(false)}>Đóng</Button>
-              </Stack>
+            <h2 id="modal-title">Chi tiết nhập xuất</h2>
+            <div
+              id="modal-description"
+              style={{ minHeight: "300px", width: "900px" }}
+            >
+              {rowData ? (
+                <>
+                  <p>
+                    <strong>Mã hàng:</strong> {rowData.ma}
+                  </p>
+                  <p>
+                    <strong>Tên hàng:</strong> {rowData.ten}
+                  </p>
+                  <p>
+                    <strong>Đơn vị tính:</strong> {rowData.tenDonViTinh}
+                  </p>
+                </>
+              ) : (
+                <p>Không có dữ liệu</p>
+              )}
+              {rowData && rowData.chiTietNhapXuat.length > 0 ? (
+                <>
+                  <HotTable
+                    data={rowData.chiTietNhapXuat.map(
+                      ({ id, idKho, ma, ...rest }) => Object.values(rest)
+                    )}
+                    colWidths={[200, 200, 200, 200, 150, 150, 150, 350]}
+                    height="300"
+                    width="100%"
+                    colHeaders={data.detailHeader}
+                    contextMenu={[
+                      "cut",
+                      "copy",
+                      "---------",
+                      "row_above",
+                      "row_below",
+                      "remove_row",
+                      "---------",
+                      "alignment",
+                      "make_read_only",
+                      "clear_column",
+                    ]}
+                    dropdownMenu={true}
+                    hiddenColumns={{
+                      indicators: true,
+                    }}
+                    multiColumnSorting={true}
+                    filters={true}
+                    rowHeaders={true}
+                    headerClassName="htLeft"
+                    manualRowMove={true}
+                    autoWrapRow={true}
+                    autoWrapCol={true}
+                    manualRowResize={true}
+                    manualColumnResize={true}
+                    navigableHeaders={true}
+                    licenseKey="non-commercial-and-evaluation"
+                    className="ht-theme-main"
+                    autoRowSize={true}
+                  >
+                    <HotColumn data={0} />
+                    <HotColumn data={1} />
+                    <HotColumn data={2} />
+                    <HotColumn data={3} />
+                    <HotColumn data={4} />
+                    <HotColumn data={5} />
+                    <HotColumn data={6} />
+                    <HotColumn data={7} />
+                  </HotTable>
+                </>
+              ) : (
+                <p>Không có dữ liệu chi tiết nhập xuất</p>
+              )}
+            </div>
+
+            <Stack
+              direction="row"
+              spacing={2}
+              sx={{ mt: 2 }}
+              justifyContent="flex-end"
+            >
+              <Button onClick={() => setDetailOpen(false)}>Đóng</Button>
+            </Stack>
           </Box>
         </Modal>
-        {/* MODAL */}
+        {/* MODAL ERP*/}
         <Modal open={open} onClose={handleClose}>
           <Box
             sx={{
@@ -952,6 +964,103 @@ export default function OrdersPage() {
                 </Button>
               </Stack>
             </>
+          </Box>
+        </Modal>
+        {/* MODAL Duyệt thẻ kho */}
+        <Modal open={approveOpen} onClose={() => setApproveOpen(false)}>
+          <Box
+            sx={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              bgcolor: "background.paper",
+              boxShadow: 24,
+              p: 4,
+              borderRadius: 2,
+            }}
+          >
+            <h2 id="modal-title">Chi tiết nhập xuất</h2>
+            <div
+              id="modal-description"
+              style={{ minHeight: "500px", width: "1000px" }}
+            >
+              <>
+                <p>
+                  <strong>Tên người duyệt:</strong> Nguyễn Văn A
+                </p>
+                <p>
+                  <strong>Kho: </strong> 1,2,3,4
+                </p>
+                <p>
+                  <strong>Tháng: </strong> 1
+                </p>
+                <p>
+                  <strong>Năm: </strong> 2025
+                </p>
+              </>
+             
+                <>
+                  <HotTable
+                    data={dataB}
+                    colWidths={[
+                      100, 150, 203, 289, 150, 150, 150, 150, 150, 150, 150,
+                    ]}
+                    height="500"
+                    width="100%"
+                    colHeaders={data.erpHeader}
+                    contextMenu={[
+                      "cut",
+                      "copy",
+                      "---------",
+                      "row_above",
+                      "row_below",
+                      "remove_row",
+                      "---------",
+                      "alignment",
+                      "make_read_only",
+                      "clear_column",
+                    ]}
+                    dropdownMenu={true}
+                    hiddenColumns={{
+                      indicators: true,
+                    }}
+                    multiColumnSorting={true}
+                    filters={true}
+                    rowHeaders={true}
+                    headerClassName="htLeft"
+                    manualRowMove={true}
+                    autoWrapRow={true}
+                    autoWrapCol={true}
+                    manualRowResize={true}
+                    manualColumnResize={true}
+                    navigableHeaders={true}
+                    licenseKey="non-commercial-and-evaluation"
+                    className="ht-theme-main"
+                    autoRowSize={true}
+                  >
+                    <HotColumn data={0} />
+                    <HotColumn data={1} />
+                    <HotColumn data={2} />
+                    <HotColumn data={3} />
+                    <HotColumn data={4} />
+                    <HotColumn data={5} />
+                    <HotColumn data={6} />
+                    <HotColumn data={7} />
+                    <HotColumn data={8} />
+                  </HotTable>
+                </>
+            </div>
+
+            <Stack
+              direction="row"
+              spacing={2}
+              sx={{ mt: 2 }}
+              justifyContent="flex-end"
+            >
+              <Button onClick={() => setApproveOpen(false)}>Đóng</Button>
+              <Button onClick={() => setApproveOpen(false)}  color="primary" variant="contained">Duyệt</Button>
+            </Stack>
           </Box>
         </Modal>
       </Grid2>
