@@ -37,3 +37,6 @@
   animation-duration: 10ms;
   padding: 16.5px 14px;
 }
+.red-cell {
+  background-color: red !important;
+}
