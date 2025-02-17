@@ -111,7 +111,7 @@ export default function OrdersPage() {
       ma: "SP002",
       ten: "Sản phẩm B",
       tenDonViTinh: "Hộp",
-      soLuongTonDauKy: 0,
+      soLuongTonDauKy: 10,
       soLuongNhapKhoTrongKy: 0,
       soLuongXuatKhoTrongKy: 0,
       soLuongTonCuoiKy: 0,
@@ -251,20 +251,31 @@ export default function OrdersPage() {
   };
 
   const compareData = (): void => {
-    // Kiểm tra nếu hotInstance của cả 2 table đều có tồn tại
-    if (!hotTableRef1.current?.hotInstance || !hotTableRef2.current?.hotInstance) {
+    // Lấy instance của cả 2 bảng từ ref
+    const table1 = hotTableRef1.current?.hotInstance;
+    const table2 = hotTableRef2.current?.hotInstance;
+  
+    // Nếu một trong hai instance không khả dụng thì thoát hàm
+    if (!table1 || !table2) {
       console.error("Một hoặc cả hai hotInstance không khả dụng.");
       return;
     }
-
+  
     // Định nghĩa mapping từ tên thuộc tính cần so sánh sang chỉ số cột trong bảng
-    const propertyToColIndex: { [key: string]: number } = {
+    const propertyToColIndexTable1: { [key in keyof effectData]?: number } = {
       soLuongTonDauKy: 3,
       soLuongNhapKhoTrongKy: 4,
       soLuongXuatKhoTrongKy: 5,
       soLuongTonCuoiKy: 6,
     };
-
+  
+    const propertyToColIndexTable2: { [key in keyof erpData]?: number } = {
+      soLuongTonDauKy: 5, // Chỉ số cột khác trong bảng 2
+      soLuongNhapKhoTrongKy: 6,
+      soLuongXuatKhoTrongKy: 7,
+      soLuongTonCuoiKy: 8,
+    };
+  
     // Duyệt qua từng phần tử trong data1
     data1.forEach((item, i) => {
       // Tìm các dòng trong data2 có cùng mã (ma)
@@ -274,61 +285,85 @@ export default function OrdersPage() {
           matchingIndices.push(j);
         }
       });
-
+  
       if (matchingIndices.length === 0) {
         // --- TRƯỜNG HỢP 1: data1 có mã nhưng data2 không có mã đó ---
-        // Chèn một dòng trống vào table2 tại vị trí i
-        hotTableRef2.current!.hotInstance.alter("insert_row", i);
-        const totalCols = hotTableRef2.current!.hotInstance.countCols();
-        // Tô đỏ toàn bộ dòng vừa thêm
+        table2.alter("insert_row_below", i, 1); // Chèn 1 dòng trống dưới vị trí i
+        table1.alter("insert_row_below", i + 1, 1); // Chèn 1 dòng trống tương ứng trong table1 (i+1 để thêm dưới dòng i)
+  
+        const totalCols = table2.countCols();
+        const newRowIndex = i + 1; // Dòng mới được chèn là dưới dòng i, vì insert_row_below
+  
+        // Tô đỏ toàn bộ dòng vừa thêm ở table2
         for (let col = 0; col < totalCols; col++) {
-          hotTableRef2.current!.hotInstance.setCellMeta(i, col, "className", "red-cell");
+          table2.setCellMeta(newRowIndex, col, "className", "red-cell");
         }
-        console.warn(`Mã ${item.ma} không có trong data2. Đã thêm dòng trống tại index ${i}.`);
+  
+        // Tô đỏ toàn bộ dòng vừa thêm ở table1
+        for (let col = 0; col < totalCols; col++) {
+          table1.setCellMeta(newRowIndex, col, "className", "red-cell");
+        }
+  
+        console.warn(`Mã ${item.ma} không có trong data2. Đã thêm dòng trống tại index ${newRowIndex}.`);
       } else if (matchingIndices.length === 1) {
         // --- TRƯỜNG HỢP 2: data1 có mã và data2 có 1 dòng khớp ---
         const j = matchingIndices[0];
-        // So sánh các thuộc tính cần thiết
-        Object.keys(propertyToColIndex).forEach((prop) => {
-          // @ts-ignore: Sử dụng prop để truy cập giá trị
-          if (item[prop] !== data2[j][prop]) {
-            const colIndex = propertyToColIndex[prop];
+        const compareKeys: (keyof effectData)[] = [
+          "soLuongTonDauKy",
+          "soLuongNhapKhoTrongKy",
+          "soLuongXuatKhoTrongKy",
+          "soLuongTonCuoiKy",
+        ];
+  
+        compareKeys.forEach((prop) => {
+          const colIndex1 = propertyToColIndexTable1[prop];
+          const colIndex2 = propertyToColIndexTable2[prop as keyof erpData];
+  
+          if (colIndex1 !== undefined && colIndex2 !== undefined && item[prop] !== data2[j][prop as keyof erpData]) {
             // Tô đỏ ô tại table1
-            hotTableRef1.current!.hotInstance.setCellMeta(i, colIndex, "className", "red-cell");
+            table1.setCellMeta(i, colIndex1, "className", "red-cell");
             // Tô đỏ ô tương ứng tại table2
-            hotTableRef2.current!.hotInstance.setCellMeta(j, colIndex, "className", "red-cell");
+            table2.setCellMeta(j, colIndex2, "className", "red-cell");
+  
             console.error(
-              `Mã ${item.ma}: Giá trị ${prop} không khớp (data1: ${item[prop]} vs data2: ${data2[j][prop]}).`
+              `Mã ${item.ma}: Giá trị ${prop} không khớp (data1: ${item[prop]} vs data2: ${data2[j][prop as keyof erpData]}).`
             );
           }
         });
       } else {
         // --- TRƯỜNG HỢP 3: data1 có mã và data2 có nhiều dòng khớp ---
-        // Chỉ so sánh thuộc tính soLuongNhapKhoTrongKy theo tổng các dòng
-        const colIndex = propertyToColIndex["soLuongNhapKhoTrongKy"];
+        const colIndex1 = propertyToColIndexTable1["soLuongTonDauKy"];
+        const colIndex2 = propertyToColIndexTable2["soLuongTonDauKy"];
+  
+        if (colIndex1 === undefined || colIndex2 === undefined) return;
+  
+        // Tính tổng soLuongTonDauKy từ tất cả các dòng khớp trong data2
         const sumData2 = matchingIndices.reduce(
-          (sum, idx) => sum + data2[idx].soLuongNhapKhoTrongKy,
+          (sum, idx) => sum + data2[idx].soLuongTonDauKy,
           0
         );
-        if (item.soLuongNhapKhoTrongKy !== sumData2) {
-          // Tô đỏ ô soLuongNhapKhoTrongKy ở table1
-          hotTableRef1.current!.hotInstance.setCellMeta(i, colIndex, "className", "red-cell");
-          // Tô đỏ ô tương ứng ở tất cả các dòng khớp trong table2
+  
+        // So sánh tổng soLuongTonDauKy từ data2 với giá trị trong data1
+        if (item.soLuongTonDauKy !== sumData2) {
+          // Tô đỏ ô soLuongTonDauKy ở table1
+          table1.setCellMeta(i, colIndex1, "className", "red-cell");
+  
+          // Tô đỏ tất cả các ô soLuongTonDauKy tương ứng ở các dòng trong table2
           matchingIndices.forEach((j) => {
-            hotTableRef2.current!.hotInstance.setCellMeta(j, colIndex, "className", "red-cell");
+            table2.setCellMeta(j, colIndex2, "className", "red-cell");
           });
+  
           console.error(
-            `Mã ${item.ma}: soLuongNhapKhoTrongKy không khớp (data1: ${item.soLuongNhapKhoTrongKy} vs data2 sum: ${sumData2}).`
+            `Mã ${item.ma}: soLuongTonDauKy không khớp (data1: ${item.soLuongTonDauKy} vs data2 sum: ${sumData2}).`
           );
         }
       }
     });
-
+  
     // Render lại 2 bảng để cập nhật giao diện
-    hotTableRef1.current!.hotInstance.render();
-    hotTableRef2.current!.hotInstance.render();
+    table1.render();
+    table2.render();
   };
-
  // Hàm chuyển đổi các phần tử string số sang number
   const onCellClick = (
   ) => {
