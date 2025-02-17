@@ -347,8 +347,6 @@ export default function OrdersPage() {
     table1.render();
     table2.render();
   };
-  // Hàm chuyển đổi các phần tử string số sang number
-  const onCellClick = () => {};
   return (
     <>
       <Head>
@@ -487,7 +485,14 @@ export default function OrdersPage() {
               licenseKey="non-commercial-and-evaluation"
               className="ht-theme-main" // Apply theme class here
               autoRowSize={true}
-              afterOnCellMouseDown={(event, coords) => {}}
+              afterOnCellMouseDown={(event, coords) => 
+                {
+                  if (coords.row >= 0 && coords.col >= 0) {
+                    const selectedRow = data2[coords.row];
+                    setRowData(selectedRow);
+                    setDetailOpen(true);
+                  }
+              }}
             ></HotTable>
           </Grid2>
         </Grid2>
