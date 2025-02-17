@@ -289,21 +289,12 @@ export default function OrdersPage() {
       if (matchingIndices.length === 0) {
         // --- TRƯỜNG HỢP 1: data1 có mã nhưng data2 không có mã đó ---
         table2.alter("insert_row_below", i, 1); // Chèn 1 dòng trống dưới vị trí i
-        table1.alter("insert_row_below", i + 1, 1); // Chèn 1 dòng trống tương ứng trong table1 (i+1 để thêm dưới dòng i)
-  
         const totalCols = table2.countCols();
         const newRowIndex = i + 1; // Dòng mới được chèn là dưới dòng i, vì insert_row_below
-  
-        // Tô đỏ toàn bộ dòng vừa thêm ở table2
+        // Tô đỏ toàn bộ dòng vừa thêm
         for (let col = 0; col < totalCols; col++) {
           table2.setCellMeta(newRowIndex, col, "className", "red-cell");
         }
-  
-        // Tô đỏ toàn bộ dòng vừa thêm ở table1
-        for (let col = 0; col < totalCols; col++) {
-          table1.setCellMeta(newRowIndex, col, "className", "red-cell");
-        }
-  
         console.warn(`Mã ${item.ma} không có trong data2. Đã thêm dòng trống tại index ${newRowIndex}.`);
       } else if (matchingIndices.length === 1) {
         // --- TRƯỜNG HỢP 2: data1 có mã và data2 có 1 dòng khớp ---
