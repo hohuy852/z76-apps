@@ -242,14 +242,6 @@ export default function OrdersPage() {
 
 
     // Hàm chuyển đổi các phần tử string số sang number
-  // Định nghĩa mapping từ tên thuộc tính cần so sánh sang chỉ số cột trong bảng
-  const propertyToColIndex: { [key: string]: number } = {
-    soLuongTonDauKy: 3,
-    soLuongNhapKhoTrongKy: 4,
-    soLuongXuatKhoTrongKy: 5,
-    soLuongTonCuoiKy: 6,
-  };
-
   const compareData = (): void => {
     // Lấy instance của cả 2 bảng từ ref
     const table1 = hotTableRef1.current?.hotInstance;
