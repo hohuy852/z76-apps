@@ -14,9 +14,10 @@ import DatePicker from "@/components/DatePicker/DatePicker";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import "./style.css";
 import dayjs from "dayjs";
+import { table } from "console";
 // register Handsontable's modules
 registerAllModules();
-type status = "pass" | "fail" | "unknown" ;
+type status = "pass" | "fail" | "unknown";
 // pass: Tất cả các cột của 1 mã hàng 2 bên bằng nhau. cả 2 bên set pass
 // fail: 1 Bên có bên không. Bên không set fail
 // unknown: Mã hàng cả 2 bên là độc nhất và có 1 hoặc 1 vài cột bị khác hoặc Mã hàng cả 2 bên là không độc nhất và có tổng của 1 hoặc 1 vài cột bị khác =>
@@ -27,11 +28,11 @@ interface effectData {
   ten: string;
   tenDonViTinh: string;
   soLuongTonDauKy: number | string;
-  soLuongNhapKhoTrongKy: number| string;
-  soLuongXuatKhoTrongKy: number| string;
-  soLuongTonCuoiKy: number| string;
+  soLuongNhapKhoTrongKy: number | string;
+  soLuongXuatKhoTrongKy: number | string;
+  soLuongTonCuoiKy: number | string;
   soLuongNo: number | string | null;
-  trangThaiCheck: status|Array<boolean>;
+  trangThaiCheck: status | Array<boolean>;
 }
 interface erpData {
   idKho: number | string;
@@ -44,23 +45,21 @@ interface erpData {
   soLuongXuatKhoTrongKy: number | string;
   soLuongTonCuoiKy: number | string;
   chiTietNhapXuat: Array<Record<string, any>>; // hoặc định nghĩa rõ ràng hơn nếu biết cấu trúc
-  trangThaiCheck: status|Array<boolean>;
+  trangThaiCheck: status | Array<boolean>;
 }
 
-
-
 export default function OrdersPage() {
-  const data1: effectData[] = [
+  const dataEffect: effectData[] = [
     {
       ma: "SP001",
       ten: "Sản phẩm A",
       tenDonViTinh: "Cái",
-      soLuongTonDauKy: 100,
+      soLuongTonDauKy: 110,
       soLuongNhapKhoTrongKy: 50,
       soLuongXuatKhoTrongKy: 30,
       soLuongTonCuoiKy: 120,
       soLuongNo: "",
-      trangThaiCheck: "unknown"
+      trangThaiCheck: "unknown",
     },
     {
       ma: "SP002",
@@ -71,7 +70,7 @@ export default function OrdersPage() {
       soLuongXuatKhoTrongKy: 60,
       soLuongTonCuoiKy: 220,
       soLuongNo: "",
-      trangThaiCheck: "unknown"
+      trangThaiCheck: "unknown",
     },
     {
       ma: "SP003",
@@ -82,7 +81,7 @@ export default function OrdersPage() {
       soLuongXuatKhoTrongKy: 10,
       soLuongTonCuoiKy: 60,
       soLuongNo: "",
-      trangThaiCheck: "unknown"
+      trangThaiCheck: "unknown",
     },
     {
       ma: "SP004",
@@ -93,12 +92,12 @@ export default function OrdersPage() {
       soLuongXuatKhoTrongKy: 444,
       soLuongTonCuoiKy: 4444,
       soLuongNo: "",
-      trangThaiCheck: "unknown"
-    }
+      trangThaiCheck: "unknown",
+    },
   ];
 
   // Dữ liệu mẫu cho erpData
-  const data2: erpData[] = [
+  const dataErp: erpData[] = [
     {
       idKho: 1,
       tenKho: "Kho Chính",
@@ -113,7 +112,7 @@ export default function OrdersPage() {
         { ngay: "2024-02-01", soLuong: 10, loai: "Nhập" },
         { ngay: "2024-02-05", soLuong: 5, loai: "Xuất" },
       ],
-      trangThaiCheck: "unknown"
+      trangThaiCheck: "unknown",
     },
     {
       idKho: 2,
@@ -129,7 +128,7 @@ export default function OrdersPage() {
         { ngay: "2024-02-02", soLuong: 20, loai: "Nhập" },
         { ngay: "2024-02-06", soLuong: 10, loai: "Xuất" },
       ],
-      trangThaiCheck: "unknown"
+      trangThaiCheck: "unknown",
     },
     {
       idKho: 2,
@@ -145,7 +144,7 @@ export default function OrdersPage() {
         { ngay: "2024-02-02", soLuong: 20, loai: "Nhập" },
         { ngay: "2024-02-06", soLuong: 10, loai: "Xuất" },
       ],
-      trangThaiCheck: "unknown"
+      trangThaiCheck: "unknown",
     },
     {
       idKho: 1,
@@ -161,7 +160,7 @@ export default function OrdersPage() {
         { ngay: "2024-02-02", soLuong: 20, loai: "Nhập" },
         { ngay: "2024-02-06", soLuong: 10, loai: "Xuất" },
       ],
-      trangThaiCheck: "unknown"
+      trangThaiCheck: "unknown",
     },
     {
       idKho: 1,
@@ -177,7 +176,7 @@ export default function OrdersPage() {
         { ngay: "2024-02-02", soLuong: 20, loai: "Nhập" },
         { ngay: "2024-02-06", soLuong: 10, loai: "Xuất" },
       ],
-      trangThaiCheck: "unknown"
+      trangThaiCheck: "unknown",
     },
     {
       idKho: 1,
@@ -193,16 +192,18 @@ export default function OrdersPage() {
         { ngay: "2024-02-02", soLuong: 20, loai: "Nhập" },
         { ngay: "2024-02-06", soLuong: 10, loai: "Xuất" },
       ],
-      trangThaiCheck: "unknown"
-    }
+      trangThaiCheck: "unknown",
+    },
   ];
   // const [effectData, setEffectData] = React.useState<(boolean | string | number)[][]>([]);
-  // const [erpData, setErpData] = React.useState<(boolean | string | number)[][]>([]);
+  // const [erpData, seterpData] = React.useState<(boolean | string | number)[][]>([]);
   const [open, setOpen] = React.useState(false);
   const [detailOpen, setDetailOpen] = React.useState(false);
   const [approveOpen, setApproveOpen] = React.useState(false);
   const [rowData, setRowData] = React.useState<erpData | null>(null);
-
+  // const [effectFilteredData, setEffectFilteredData] = React.useState<effectData[]>([]);
+  // const [resultMatched, setResultMatched] = React.useState<erpData[]>([]);
+  // const [erpFilteredData, setErpFilteredData] = React.useState<erpData[]>([]);
   const [loading, setLoading] = React.useState(false);
   // Lấy ngày hiện tại làm giá trị mặc định
   const currentDate = dayjs().format("YYYY-MM-DD");
@@ -267,7 +268,7 @@ export default function OrdersPage() {
         return Object.values(transformedItem);
       });
 
-      // setErpData(formattedData);
+      // seterpData(formattedData);
       console.log("Dữ liệu sau khi gộp:", formattedData);
     } catch (error) {
       console.error("Lỗi khi gọi API:", error);
@@ -307,28 +308,59 @@ export default function OrdersPage() {
     // Lấy instance của cả 2 bảng từ ref
     const table1 = hotTableRef1.current?.hotInstance;
     const table2 = hotTableRef2.current?.hotInstance;
-  
+    const table1Data = hotTableRef1.current?.hotInstance?.getData();
+    const table2Data = hotTableRef2.current?.hotInstance?.getData();
+    if (!table1Data || !table2Data) {
+      console.error("Không thể lấy dữ liệu từ bảng.");
+      return;
+    }
+ // Chuyển dữ liệu bảng thành các interface tương ứng
+    const data1: effectData[] = table1Data.map((row: any) => ({
+      ma: row[0],
+      ten: row[1],
+      tenDonViTinh: row[2],
+      soLuongTonDauKy: row[3],
+      soLuongNhapKhoTrongKy: row[4],
+      soLuongXuatKhoTrongKy: row[5],
+      soLuongTonCuoiKy: row[6],
+      soLuongNo: row[7] ?? null,
+      trangThaiCheck: row[8] ?? "unknown",
+    }));
+
+    const data2: erpData[] = table2Data.map((row: any) => ({
+      idKho: row[0],
+      tenKho: row[1],
+      ma: row[2],
+      ten: row[3],
+      tenDonViTinh: row[4],
+      soLuongTonDauKy: row[5],
+      soLuongNhapKhoTrongKy: row[6],
+      soLuongXuatKhoTrongKy: row[7],
+      soLuongTonCuoiKy: row[8],
+      chiTietNhapXuat: row[9] ?? [{}],
+      trangThaiCheck: row[10] ?? "unknown",
+    }));
     // Nếu một trong hai instance không khả dụng thì thoát hàm
     if (!table1 || !table2) {
       console.error("Một hoặc cả hai hotInstance không khả dụng.");
       return;
     }
-  
+
     let allCodeArr: string[] = [];
 
     // Lấy tất cả mã hàng từ effect data
-    data1.forEach((item) => { 
+    data1.forEach((item) => {
       allCodeArr.push(item.ma);
     });
 
     // Lấy tất cả mã hàng từ erp data
-    data2.forEach((item) => { 
+    data2.forEach((item) => {
       allCodeArr.push(item.ma);
     });
 
     // Xóa mã hàng trùng nhau
     allCodeArr = [...new Set(allCodeArr)];
-  
+
     // Định nghĩa mapping từ tên thuộc tính cần so sánh sang chỉ số cột trong bảng
     const propertyToColIndexTable1: { [key in keyof effectData]?: number } = {
       soLuongTonDauKy: 3,
@@ -336,7 +368,7 @@ export default function OrdersPage() {
       soLuongXuatKhoTrongKy: 5,
       soLuongTonCuoiKy: 6,
     };
-  
+
     const propertyToColIndexTable2: { [key in keyof erpData]?: number } = {
       soLuongTonDauKy: 5,
       soLuongNhapKhoTrongKy: 6,
@@ -346,7 +378,7 @@ export default function OrdersPage() {
 
     // Chuẩn bị error data với trạng thái check mặc định là 'fail'
     // Trạng thái fail => mặc định tô đỏ cả hàng(xem tại line 21)
-    const errorErpData: erpData = {
+    const errorerpData: erpData = {
       idKho: "N/A",
       tenKho: "N/A",
       ma: "N/A",
@@ -356,14 +388,12 @@ export default function OrdersPage() {
       soLuongNhapKhoTrongKy: "N/A",
       soLuongXuatKhoTrongKy: "N/A",
       soLuongTonCuoiKy: "N/A",
-      chiTietNhapXuat: [
-        {}
-      ],
-      trangThaiCheck: "fail"
+      chiTietNhapXuat: [{}],
+      trangThaiCheck: "fail",
     };
 
     const errorEffectData: effectData = {
-      ma: 'N/A',
+      ma: "N/A",
       ten: "N/A",
       tenDonViTinh: "N/A",
       soLuongTonDauKy: "N/A",
@@ -371,7 +401,7 @@ export default function OrdersPage() {
       soLuongXuatKhoTrongKy: "N/A",
       soLuongTonCuoiKy: "N/A",
       soLuongNo: null,
-      trangThaiCheck: "fail"
+      trangThaiCheck: "fail",
     };
 
     // Chuẩn bị dummy data với trạng thái check mặc định là 'unknown' => sẽ được thay đổi thành array trong quá trình so sánh dữ liệu
@@ -384,12 +414,11 @@ export default function OrdersPage() {
       soLuongXuatKhoTrongKy: "-",
       soLuongTonCuoiKy: "-",
       soLuongNo: null,
-      trangThaiCheck: "unknown"
+      trangThaiCheck: "unknown",
     };
 
     // Duyệt từng mã hàng
     allCodeArr.forEach((code, idx) => {
-
       // Lưu lại tất cả vị trí của mã hàng trong effect data(nếu tồn tại)
       const matchingIndices1: number[] = [];
       data1.forEach((item, item_idx) => {
@@ -406,77 +435,122 @@ export default function OrdersPage() {
         }
       });
 
-      if((matchingIndices1.length != 0) && (matchingIndices2.length == 0)) {
+      if (matchingIndices1.length != 0 && matchingIndices2.length == 0) {
         // --- TRƯỜNG HỢP 1: data1 có mã nhưng data2 không có mã đó ---
         for (let tmpCount = 0; tmpCount < matchingIndices1.length; tmpCount++) {
-          errorErpData.ma = code;
-          data2.push(errorErpData);
+          errorerpData.ma = code;
+          data2.push(errorerpData);
           data1[matchingIndices1[tmpCount]].trangThaiCheck = "pass";
         }
-      } else if ((matchingIndices1.length == 0) && (matchingIndices2.length != 0)) {
+      } else if (matchingIndices1.length == 0 && matchingIndices2.length != 0) {
         // --- TRƯỜNG HỢP 2: data2 có mã nhưng data1 không có mã đó ---
         errorEffectData.ma = code;
-        for (let tmpCount = 0; tmpCount < matchingIndices2.length; tmpCount++) { 
+        for (let tmpCount = 0; tmpCount < matchingIndices2.length; tmpCount++) {
           data1.push(errorEffectData);
           data2[matchingIndices2[tmpCount]].trangThaiCheck = "pass";
         }
-      } else if ((matchingIndices1.length == 1) && (matchingIndices2.length == 1)) {
+      } else if (matchingIndices1.length == 1 && matchingIndices2.length == 1) {
         // --- TRƯỜNG HỢP 3: data1 có mã và data2 có 1 dòng khớp ---
         const temp_trangThaiCheck: boolean[] = [false];
-        temp_trangThaiCheck[0] = data1[matchingIndices1[0]].soLuongTonDauKy == data2[matchingIndices2[0]].soLuongTonDauKy;
-        temp_trangThaiCheck[1] = data1[matchingIndices1[0]].soLuongNhapKhoTrongKy == data2[matchingIndices2[0]].soLuongNhapKhoTrongKy;
-        temp_trangThaiCheck[2] = data1[matchingIndices1[0]].soLuongXuatKhoTrongKy == data2[matchingIndices2[0]].soLuongXuatKhoTrongKy;
-        temp_trangThaiCheck[3] = data1[matchingIndices1[0]].soLuongTonCuoiKy == data2[matchingIndices2[0]].soLuongTonCuoiKy;
+        temp_trangThaiCheck[0] =
+          data1[matchingIndices1[0]].soLuongTonDauKy ==
+          data2[matchingIndices2[0]].soLuongTonDauKy;
+        temp_trangThaiCheck[1] =
+          data1[matchingIndices1[0]].soLuongNhapKhoTrongKy ==
+          data2[matchingIndices2[0]].soLuongNhapKhoTrongKy;
+        temp_trangThaiCheck[2] =
+          data1[matchingIndices1[0]].soLuongXuatKhoTrongKy ==
+          data2[matchingIndices2[0]].soLuongXuatKhoTrongKy;
+        temp_trangThaiCheck[3] =
+          data1[matchingIndices1[0]].soLuongTonCuoiKy ==
+          data2[matchingIndices2[0]].soLuongTonCuoiKy;
         data1[matchingIndices1[0]].trangThaiCheck = temp_trangThaiCheck;
         data2[matchingIndices2[0]].trangThaiCheck = temp_trangThaiCheck;
-
-      } else if ((matchingIndices1.length == 1) && (matchingIndices2.length > 1)) {
+      } else if (matchingIndices1.length == 1 && matchingIndices2.length > 1) {
         // --- TRƯỜNG HỢP 4: data1 có nhiều dòng khớp và data2 có nhiều dòng khớp ---
 
         // Tính tổng các cột ở bảng EFFECT
         const tmpEffectSum: number[] = [0];
         for (let tmpCount = 0; tmpCount < matchingIndices1.length; tmpCount++) {
-          if(typeof(data1[matchingIndices1[tmpCount]].soLuongTonDauKy) == 'number') {
-            tmpEffectSum[0] += Number(data1[matchingIndices1[tmpCount]].soLuongTonDauKy);
+          if (
+            typeof data1[matchingIndices1[tmpCount]].soLuongTonDauKy == "number"
+          ) {
+            tmpEffectSum[0] += Number(
+              data1[matchingIndices1[tmpCount]].soLuongTonDauKy
+            );
           }
 
-          if(typeof(data1[matchingIndices1[tmpCount]].soLuongNhapKhoTrongKy) == 'number') {
-            tmpEffectSum[1] += Number(data1[matchingIndices1[tmpCount]].soLuongNhapKhoTrongKy);
+          if (
+            typeof data1[matchingIndices1[tmpCount]].soLuongNhapKhoTrongKy ==
+            "number"
+          ) {
+            tmpEffectSum[1] += Number(
+              data1[matchingIndices1[tmpCount]].soLuongNhapKhoTrongKy
+            );
           }
 
-          if(typeof(data1[matchingIndices1[tmpCount]].soLuongXuatKhoTrongKy) == 'number') {
-            tmpEffectSum[2] += Number(data1[matchingIndices1[tmpCount]].soLuongXuatKhoTrongKy);
+          if (
+            typeof data1[matchingIndices1[tmpCount]].soLuongXuatKhoTrongKy ==
+            "number"
+          ) {
+            tmpEffectSum[2] += Number(
+              data1[matchingIndices1[tmpCount]].soLuongXuatKhoTrongKy
+            );
           }
 
-          if(typeof(data1[matchingIndices1[tmpCount]].soLuongTonCuoiKy) == 'number') {
-            tmpEffectSum[3] += Number(data1[matchingIndices1[tmpCount]].soLuongTonCuoiKy);
+          if (
+            typeof data1[matchingIndices1[tmpCount]].soLuongTonCuoiKy ==
+            "number"
+          ) {
+            tmpEffectSum[3] += Number(
+              data1[matchingIndices1[tmpCount]].soLuongTonCuoiKy
+            );
           }
         }
 
         // Tính tổng các cột ở bảng ERP
         const tmpErpSum: number[] = [0];
         for (let tmpCount = 0; tmpCount < matchingIndices2.length; tmpCount++) {
-          if(typeof(data2[matchingIndices2[tmpCount]].soLuongTonDauKy) == 'number') {
-            tmpErpSum[0] += Number(data2[matchingIndices2[tmpCount]].soLuongTonDauKy);
+          if (
+            typeof data2[matchingIndices2[tmpCount]].soLuongTonDauKy == "number"
+          ) {
+            tmpErpSum[0] += Number(
+              data2[matchingIndices2[tmpCount]].soLuongTonDauKy
+            );
           }
 
-          if(typeof(data2[matchingIndices2[tmpCount]].soLuongNhapKhoTrongKy) == 'number') {
-            tmpErpSum[1] += Number(data2[matchingIndices2[tmpCount]].soLuongNhapKhoTrongKy);
+          if (
+            typeof data2[matchingIndices2[tmpCount]].soLuongNhapKhoTrongKy ==
+            "number"
+          ) {
+            tmpErpSum[1] += Number(
+              data2[matchingIndices2[tmpCount]].soLuongNhapKhoTrongKy
+            );
           }
 
-          if(typeof(data2[matchingIndices2[tmpCount]].soLuongXuatKhoTrongKy) == 'number') {
-            tmpErpSum[2] += Number(data2[matchingIndices2[tmpCount]].soLuongXuatKhoTrongKy);
+          if (
+            typeof data2[matchingIndices2[tmpCount]].soLuongXuatKhoTrongKy ==
+            "number"
+          ) {
+            tmpErpSum[2] += Number(
+              data2[matchingIndices2[tmpCount]].soLuongXuatKhoTrongKy
+            );
           }
 
-          if(typeof(data2[matchingIndices2[tmpCount]].soLuongTonCuoiKy) == 'number') {
-            tmpErpSum[3] += Number(data2[matchingIndices2[tmpCount]].soLuongTonCuoiKy);
+          if (
+            typeof data2[matchingIndices2[tmpCount]].soLuongTonCuoiKy ==
+            "number"
+          ) {
+            tmpErpSum[3] += Number(
+              data2[matchingIndices2[tmpCount]].soLuongTonCuoiKy
+            );
           }
         }
 
         // So sánh sum ở bảng ERP và bảng effect
         let tmpTrangThaiCheck: boolean[] = [false];
         for (let tmpCount = 0; tmpCount < tmpErpSum.length; tmpCount++) {
-          if(tmpErpSum[tmpCount] == tmpEffectSum[tmpCount]) {
+          if (tmpErpSum[tmpCount] == tmpEffectSum[tmpCount]) {
             tmpTrangThaiCheck[tmpCount] = true;
           }
         }
@@ -492,19 +566,21 @@ export default function OrdersPage() {
         // Đánh trạng thái so sánh cho các hàng dummy mới thêm vào
         dummyEffectData.ma = code;
         dummyEffectData.trangThaiCheck = tmpTrangThaiCheck;
-        for (let tmpCount = 0; tmpCount < matchingIndices2.length - matchingIndices1.length; tmpCount++) {
+        for (
+          let tmpCount = 0;
+          tmpCount < matchingIndices2.length - matchingIndices1.length;
+          tmpCount++
+        ) {
           data1.push(dummyEffectData);
         }
       }
-      
     });
     // Dữ liệu mẫu cho data1 và data2 đã được sắp xếp theo mã sản phẩm 'ma'
     const sortedData1 = data1.sort((a, b) => a.ma.localeCompare(b.ma));
     const sortedData2 = data2.sort((a, b) => a.ma.localeCompare(b.ma));
-    
 
-    sortedData1.forEach((item, item_idx) => { 
-      const dummyArr: (string | number| null)[] = [
+    sortedData1.forEach((item, item_idx) => {
+      const dummyArr: (string | number | null)[] = [
         item.ma,
         item.ten,
         item.tenDonViTinh,
@@ -512,28 +588,28 @@ export default function OrdersPage() {
         item.soLuongNhapKhoTrongKy,
         item.soLuongXuatKhoTrongKy,
         item.soLuongTonCuoiKy,
-        item.soLuongNo
+        item.soLuongNo,
       ];
 
       for (let col = 0; col < table1.countCols() - 2; col++) {
         table1.setDataAtCell(item_idx, col, dummyArr[col]);
         // Tất cả các cell được mark N/A đều tô đỏ
-        if(item.trangThaiCheck === "fail") {
+        if (item.trangThaiCheck === "fail") {
           table1.setCellMeta(item_idx, col, "className", "red-cell");
-        } else if(item.trangThaiCheck == "unknown") {
+        } else if (item.trangThaiCheck == "unknown") {
           //Do nothing
-        } else if(item.trangThaiCheck == "pass") {
+        } else if (item.trangThaiCheck == "pass") {
           //Do nothing
-        } else if(Array.isArray(item.trangThaiCheck)) {
-          if((col >= 3) && (!item.trangThaiCheck[col-3])) {
+        } else if (Array.isArray(item.trangThaiCheck)) {
+          if (col >= 3 && !item.trangThaiCheck[col - 3]) {
             table1.setCellMeta(item_idx, col, "className", "red-cell");
           }
         }
       }
     });
 
-    sortedData2.forEach((item, item_idx) => { 
-      const dummyArr: (string | number| null)[] = [
+    sortedData2.forEach((item, item_idx) => {
+      const dummyArr: (string | number | null)[] = [
         item.idKho,
         item.tenKho,
         item.ma,
@@ -542,19 +618,19 @@ export default function OrdersPage() {
         item.soLuongTonDauKy,
         item.soLuongNhapKhoTrongKy,
         item.soLuongXuatKhoTrongKy,
-        item.soLuongTonCuoiKy
+        item.soLuongTonCuoiKy,
       ];
-      
+
       for (let col = 0; col < table2.countCols() - 1; col++) {
         table2.setDataAtCell(item_idx, col, dummyArr[col]);
-        if(item.trangThaiCheck === "fail") {
+        if (item.trangThaiCheck === "fail") {
           table2.setCellMeta(item_idx, col, "className", "red-cell");
-        } else if(item.trangThaiCheck == "unknown") {
+        } else if (item.trangThaiCheck == "unknown") {
           //Do nothing
-        } else if(item.trangThaiCheck == "pass") {
+        } else if (item.trangThaiCheck == "pass") {
           //Do nothing
-        } else if(Array.isArray(item.trangThaiCheck)) {
-          if((col >= 5) && (!item.trangThaiCheck[col-5])) {
+        } else if (Array.isArray(item.trangThaiCheck)) {
+          if (col >= 5 && !item.trangThaiCheck[col - 5]) {
             table2.setCellMeta(item_idx, col, "className", "red-cell");
           }
         }
@@ -565,6 +641,171 @@ export default function OrdersPage() {
     table1.render();
     table2.render();
   };
+
+  /**
+ * Hàm filterData nhận vào 2 mảng dữ liệu và trả về 3 mảng kết quả:
+ * - effectFilteredData: dữ liệu data1 sau khi loại bỏ các mục đã match
+ * - resultMatched: các nhóm từ data2 có tổng các thuộc tính khớp với mục tương ứng trong data1
+ * - erpFilteredData: dữ liệu data2 sau khi đã loại bỏ các mục đã match
+ */
+  function filterData(
+    data1: effectData[],
+    data2: erpData[]
+  ): {
+    effectFilteredData: effectData[];
+    resultMatched: erpData[];
+    erpFilteredData: erpData[];
+  } {
+    // Nhóm data2 theo 'ma'
+    const groupedData2: Record<string, erpData[]> = data2.reduce((acc, item) => {
+      if (!acc[item.ma]) {
+        acc[item.ma] = [];
+      }
+      acc[item.ma].push(item);
+      return acc;
+    }, {} as Record<string, erpData[]>);
+
+    // Lọc kết quả: nếu tổng các thuộc tính của nhóm data2 khớp với mục tương ứng ở data1 thì giữ lại cả nhóm đó
+    const resultMatched: erpData[] = [];
+
+    for (const ma in groupedData2) {
+      const group: erpData[] = groupedData2[ma];
+      // Tìm mục tương ứng trong data1
+      const target = data1.find((item) => item.ma === ma);
+      if (!target) continue; // Nếu không có mục tương ứng ở data1 thì bỏ qua
+
+      // Tính tổng các thuộc tính của nhóm (ép sang number nếu cần)
+      const sum = group.reduce(
+        (acc, cur) => ({
+          soLuongTonDauKy: Number(acc.soLuongTonDauKy) + Number(cur.soLuongTonDauKy),
+          soLuongNhapKhoTrongKy:
+            Number(acc.soLuongNhapKhoTrongKy) + Number(cur.soLuongNhapKhoTrongKy),
+          soLuongXuatKhoTrongKy:
+            Number(acc.soLuongXuatKhoTrongKy) + Number(cur.soLuongXuatKhoTrongKy),
+          soLuongTonCuoiKy:
+            Number(acc.soLuongTonCuoiKy) + Number(cur.soLuongTonCuoiKy),
+        }),
+        {
+          soLuongTonDauKy: 0,
+          soLuongNhapKhoTrongKy: 0,
+          soLuongXuatKhoTrongKy: 0,
+          soLuongTonCuoiKy: 0,
+        }
+      );
+
+      // So sánh tổng của nhóm data2 với dữ liệu tương ứng từ data1
+      if (
+        sum.soLuongTonDauKy === Number(target.soLuongTonDauKy) &&
+        sum.soLuongNhapKhoTrongKy === Number(target.soLuongNhapKhoTrongKy) &&
+        sum.soLuongXuatKhoTrongKy === Number(target.soLuongXuatKhoTrongKy) &&
+        sum.soLuongTonCuoiKy === Number(target.soLuongTonCuoiKy)
+      ) {
+        resultMatched.push(...group);
+      }
+    }
+
+    // Helper function: tính tổng các thuộc tính của một mảng các entry
+    function sumProps(entries: erpData[]): {
+      soLuongTonDauKy: number;
+      soLuongNhapKhoTrongKy: number;
+      soLuongXuatKhoTrongKy: number;
+      soLuongTonCuoiKy: number;
+    } {
+      return entries.reduce(
+        (sum, entry) => {
+          sum.soLuongTonDauKy += Number(entry.soLuongTonDauKy);
+          sum.soLuongNhapKhoTrongKy += Number(entry.soLuongNhapKhoTrongKy);
+          sum.soLuongXuatKhoTrongKy += Number(entry.soLuongXuatKhoTrongKy);
+          sum.soLuongTonCuoiKy += Number(entry.soLuongTonCuoiKy);
+          return sum;
+        },
+        {
+          soLuongTonDauKy: 0,
+          soLuongNhapKhoTrongKy: 0,
+          soLuongXuatKhoTrongKy: 0,
+          soLuongTonCuoiKy: 0,
+        }
+      );
+    }
+
+    // Lọc data1: loại bỏ các mục có tổng thuộc tính ở data2 khớp
+    const effectFilteredData = data1.filter((d1) => {
+      // Tìm các entry trong data2 có cùng 'ma'
+      const matchingData2 = data2.filter((d2) => d2.ma === d1.ma);
+
+      // Nếu không có entry nào khớp, giữ lại mục đó
+      if (matchingData2.length === 0) {
+        return true;
+      }
+
+      // Tính tổng các thuộc tính của các entry trong data2
+      const summedData2 = sumProps(matchingData2);
+
+      // Nếu tổng ở data2 khớp với data1, loại bỏ mục này khỏi data1
+      if (
+        summedData2.soLuongTonDauKy === Number(d1.soLuongTonDauKy) &&
+        summedData2.soLuongNhapKhoTrongKy === Number(d1.soLuongNhapKhoTrongKy) &&
+        summedData2.soLuongXuatKhoTrongKy === Number(d1.soLuongXuatKhoTrongKy) &&
+        summedData2.soLuongTonCuoiKy === Number(d1.soLuongTonCuoiKy)
+      ) {
+        // Loại bỏ các entry đã match khỏi data2
+        matchingData2.forEach((matching) => {
+          const index = data2.findIndex(
+            (d2) =>
+              d2.ma === matching.ma &&
+              Number(d2.soLuongTonDauKy) === Number(matching.soLuongTonDauKy) &&
+              Number(d2.soLuongNhapKhoTrongKy) === Number(matching.soLuongNhapKhoTrongKy)
+          );
+          if (index !== -1) {
+            data2.splice(index, 1);
+          }
+        });
+        return false;
+      }
+
+      return true;
+    });
+
+    // Lọc data2 (các entry còn lại sau khi loại bỏ các entry đã match)
+    const erpFilteredData = data2.filter((d2) => {
+      // Giữ lại entry nếu không tìm thấy mục tương ứng trong data1
+      const matchingData1 = data1.find((d1) => d1.ma === d2.ma);
+      return matchingData1 ? true : true;
+    });
+
+    return {
+      effectFilteredData,
+      resultMatched,
+      erpFilteredData,
+    };
+  }
+  const handleFilterData = () => {
+    const table1 = hotTableRef1.current?.hotInstance;
+    const table2 = hotTableRef2.current?.hotInstance;
+  
+    if (!table1 || !table2) {
+      console.error("Một hoặc cả hai hotInstance không khả dụng.");
+      return;
+    }
+  
+    // Tạo bản sao nếu cần tránh tác động phụ
+    const data1Copy = [...dataEffect];
+    const data2Copy = [...dataErp];
+  
+    const { effectFilteredData, resultMatched, erpFilteredData } = filterData(
+      data1Copy,
+      data2Copy
+    );
+    // // Cập nhật state
+    // setEffectFilteredData(effectFilteredData);
+    // setResultMatched(resultMatched);
+    // setErpFilteredData(erpFilteredData);
+  
+    // Cập nhật Handsontable ngay lập tức
+    table1.loadData(effectFilteredData);
+    table2.loadData(erpFilteredData);
+  };
+  
   return (
     <>
       <Head>
@@ -586,11 +827,19 @@ export default function OrdersPage() {
             <UploadButton content="EFFECT DATA" action={handleUploadA} />
             <Button
               startIcon={<CompareArrowsIcon />}
+              onClick={handleFilterData}
+              variant="contained"
+            >
+              Loc
+            </Button>
+            <Button
+              startIcon={<CompareArrowsIcon />}
               onClick={compareData}
               variant="contained"
             >
               Đối chiếu
             </Button>
+            
             <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
               <Button
                 startIcon={<CloudUploadIcon />}
@@ -625,7 +874,7 @@ export default function OrdersPage() {
         <Grid2 container size={12}>
           <Grid2 size="grow">
             <HotTable
-              data={data1}
+              data={dataEffect}
               colWidths={[203, 289, 150, 150, 150, 150, 150, 150]}
               autoColumnSize
               height="100%"
@@ -646,7 +895,8 @@ export default function OrdersPage() {
               ]}
               dropdownMenu={true}
               hiddenColumns={{
-                indicators: true,
+                columns: [7, 8],
+                indicators: false,
               }}
               multiColumnSorting={true}
               filters={true}
@@ -665,7 +915,7 @@ export default function OrdersPage() {
           </Grid2>
           <Grid2 size="grow">
             <HotTable
-              data={data2}
+              data={dataErp}
               ref={hotTableRef2}
               colWidths={[
                 100, 150, 203, 289, 150, 150, 150, 150, 150, 150, 150,
@@ -687,7 +937,7 @@ export default function OrdersPage() {
               ]}
               dropdownMenu={true}
               hiddenColumns={{
-                columns: [9],
+                columns: [9, 10],
                 indicators: false,
               }}
               multiColumnSorting={true}
@@ -703,13 +953,12 @@ export default function OrdersPage() {
               licenseKey="non-commercial-and-evaluation"
               className="ht-theme-main" // Apply theme class here
               autoRowSize={true}
-              afterOnCellMouseDown={(event, coords) => 
-                {
-                  if (coords.row >= 0 && coords.col >= 0) {
-                    const selectedRow = data2[coords.row];
-                    setRowData(selectedRow);
-                    setDetailOpen(true);
-                  }
+              afterOnCellMouseDown={(event, coords) => {
+                if (coords.row >= 0 && coords.col >= 0) {
+                  const selectedRow = dataErp[coords.row];
+                  setRowData(selectedRow);
+                  setDetailOpen(true);
+                }
               }}
             ></HotTable>
           </Grid2>
@@ -910,7 +1159,7 @@ export default function OrdersPage() {
 
               <>
                 <HotTable
-                  data={data2}
+                  data={dataErp}
                   colWidths={[
                     100, 150, 203, 289, 150, 150, 150, 150, 150, 150, 150,
                   ]}
