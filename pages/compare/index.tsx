@@ -299,24 +299,117 @@ export default function OrdersPage() {
     }
   };
 
-  const handleUploadB = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      try {
-      } catch (error) {
-        console.error("Error uploading file B:", error);
-      }
-    }
-  };
-
   const hotTableRef1 = React.useRef<HotTableRef>(null);
   const hotTableRef2 = React.useRef<HotTableRef>(null);
+
+  function FilterData(
+    data1: effectData[],
+    data2: erpData[]
+  ): { diffData1: effectData[]; diffData2: erpData[] } {
+    const diffData1 = data1.map((item1) => {
+      const matchingItems = data2.filter((item2) => item2.ma === item1.ma);
+      let diff = { ...item1 };
+
+      if (matchingItems.length === 1) {
+        // Trường hợp 1: data1 có 1 mã, data2 có 1 mã
+        const item2 = matchingItems[0];
+        diff = {
+          ...diff,
+          soLuongTonDauKy:
+            item1.soLuongTonDauKy === item2.soLuongTonDauKy
+              ? item1.soLuongTonDauKy
+              : -1, // -1 nếu khác biệt
+          soLuongNhapKhoTrongKy:
+            item1.soLuongNhapKhoTrongKy === item2.soLuongNhapKhoTrongKy
+              ? item1.soLuongNhapKhoTrongKy
+              : -1, // -1 nếu khác biệt
+          soLuongXuatKhoTrongKy:
+            item1.soLuongXuatKhoTrongKy === item2.soLuongXuatKhoTrongKy
+              ? item1.soLuongXuatKhoTrongKy
+              : -1, // -1 nếu khác biệt
+          soLuongTonCuoiKy:
+            item1.soLuongTonCuoiKy === item2.soLuongTonCuoiKy
+              ? item1.soLuongTonCuoiKy
+              : -1, // -1 nếu khác biệt
+        };
+      } else if (matchingItems.length > 1) {
+        // Trường hợp 2: data1 có 1 mã, data2 có nhiều mã
+        const totalSoLuongTonDauKy = matchingItems.reduce(
+          (sum, item) => sum + item.soLuongTonDauKy,
+          0
+        );
+        const totalSoLuongNhapKhoTrongKy = matchingItems.reduce(
+          (sum, item) => sum + item.soLuongNhapKhoTrongKy,
+          0
+        );
+        const totalSoLuongXuatKhoTrongKy = matchingItems.reduce(
+          (sum, item) => sum + item.soLuongXuatKhoTrongKy,
+          0
+        );
+        const totalSoLuongTonCuoiKy = matchingItems.reduce(
+          (sum, item) => sum + item.soLuongTonCuoiKy,
+          0
+        );
+
+        diff = {
+          ...diff,
+          soLuongTonDauKy:
+            item1.soLuongTonDauKy === totalSoLuongTonDauKy
+              ? item1.soLuongTonDauKy
+              : -1, // -1 nếu khác biệt
+          soLuongNhapKhoTrongKy:
+            item1.soLuongNhapKhoTrongKy === totalSoLuongNhapKhoTrongKy
+              ? item1.soLuongNhapKhoTrongKy
+              : -1, // -1 nếu khác biệt
+          soLuongXuatKhoTrongKy:
+            item1.soLuongXuatKhoTrongKy === totalSoLuongXuatKhoTrongKy
+              ? item1.soLuongXuatKhoTrongKy
+              : -1, // -1 nếu khác biệt
+          soLuongTonCuoiKy:
+            item1.soLuongTonCuoiKy === totalSoLuongTonCuoiKy
+              ? item1.soLuongTonCuoiKy
+              : -1, // -1 nếu khác biệt
+        };
+      } else {
+        // Trường hợp 3: data1 có 1 mã, data2 không có mã tương ứng
+        diff = {
+          ...diff,
+          soLuongTonDauKy: NaN, // Không có dữ liệu tương ứng, sử dụng NaN
+          soLuongNhapKhoTrongKy: NaN, // Không có dữ liệu tương ứng, sử dụng NaN
+          soLuongXuatKhoTrongKy: NaN, // Không có dữ liệu tương ứng, sử dụng NaN
+          soLuongTonCuoiKy: NaN, // Không có dữ liệu tương ứng, sử dụng NaN
+        };
+      }
+
+      return diff;
+    });
+
+    const diffData2 = data2.map((item2) => {
+      const matchingItems = data1.filter((item1) => item1.ma === item2.ma);
+      let diff = { ...item2 };
+
+      if (matchingItems.length === 0) {
+        // Trường hợp 3: data2 không có mã tương ứng trong data1
+        diff = {
+          ...diff,
+          soLuongTonDauKy: NaN, // Không có dữ liệu tương ứng, sử dụng NaN
+          soLuongNhapKhoTrongKy: NaN, // Không có dữ liệu tương ứng, sử dụng NaN
+          soLuongXuatKhoTrongKy: NaN, // Không có dữ liệu tương ứng, sử dụng NaN
+          soLuongTonCuoiKy: NaN, // Không có dữ liệu tương ứng, sử dụng NaN
+        };
+      }
+
+      return diff;
+    });
+
+    return { diffData1, diffData2 };
+  }
 
   const compareData = (): void => {
     // Lấy instance của cả 2 bảng từ ref
     const table1 = hotTableRef1.current?.hotInstance;
     const table2 = hotTableRef2.current?.hotInstance;
-  
+
     // Nếu một trong hai instance không khả dụng thì thoát hàm
     if (!table1 || !table2) {
       console.error("Một hoặc cả hai hotInstance không khả dụng.");
@@ -347,7 +440,7 @@ export default function OrdersPage() {
       soLuongXuatKhoTrongKy: 5,
       soLuongTonCuoiKy: 6,
     };
-  
+
     const propertyToColIndexTable2: { [key in keyof erpData]?: number } = {
       soLuongTonDauKy: 5,
       soLuongNhapKhoTrongKy: 6,
@@ -506,119 +599,13 @@ export default function OrdersPage() {
         }
       }
     });
-    // // Duyệt qua từng phần tử trong data1 đã sắp xếp
-    // sortedData1.forEach((item, i) => {
-    //   console.log("item", item)
-
-    //   // Tìm các dòng trong data2 có cùng mã (ma)
-    //   const matchingIndices: number[] = [];
-    //   sortedData2.forEach((item2, j) => {
-    //     if (item2.ma === item.ma) {
-    //       matchingIndices.push(j);
-    //     }
-    //   });
-
-      
-    //   if (matchingIndices.length === 0) {
-    //     // --- TRƯỜNG HỢP 1: data1 có mã nhưng data2 không có mã đó ---
-    //     const currentRowData = table2.getDataAtRow(i);
-    //     if(currentRowData[1] == 'N/A') {
-    //       return;
-    //     }
-    //     console.log("currentRowData", currentRowData);
-    //     table2.alter("insert_row_below", i, 1); // Chèn 1 dòng trống dưới vị trí i
-    //     currentRowData[0] = 'N/A';
-    //     currentRowData[1] = 'N/A';
-    //     currentRowData.fill('N/A',3);
-    //     const totalCols = table2.countCols();
-    //     const newRowIndex = i + 1; // Dòng mới được chèn là dưới dòng i, vì insert_row_below
-    //     // Tô đỏ toàn bộ dòng vừa thêm
-    //     for (let col = 0; col < currentRowData.length; col++) {
-    //       table2.setDataAtCell(newRowIndex, col, currentRowData[col]);
-    //       table2.setCellMeta(newRowIndex, col, "className", "red-cell");
-    //     }
-    //     console.warn(`Mã ${item.ma} không có trong data2. Đã thêm dòng trống tại index ${newRowIndex}.`);
-    //   } else if (matchingIndices.length === 1) {
-    //     // --- TRƯỜNG HỢP 2: data1 có mã và data2 có 1 dòng khớp ---
-    //     const j = matchingIndices[0];
-    //     const compareKeys: (keyof effectData)[] = [
-    //       "soLuongTonDauKy",
-    //       "soLuongNhapKhoTrongKy",
-    //       "soLuongXuatKhoTrongKy",
-    //       "soLuongTonCuoiKy",
-    //     ];
-  
-    //     compareKeys.forEach((prop) => {
-    //       const colIndex1 = propertyToColIndexTable1[prop];
-    //       const colIndex2 = propertyToColIndexTable2[prop as keyof erpData];
-  
-    //       if (colIndex1 !== undefined && colIndex2 !== undefined && item[prop] !== sortedData2[j][prop as keyof erpData]) {
-    //         // Tô đỏ ô tại table1
-    //         table1.setCellMeta(i, colIndex1, "className", "red-cell");
-    //         // Tô đỏ ô tương ứng tại table2
-    //         table2.setCellMeta(j, colIndex2, "className", "red-cell");
-  
-    //         // console.error(
-    //         //   `Mã ${item.ma}: Giá trị ${prop} không khớp (data1: ${item[prop]} vs data2: ${sortedData2[j][prop as keyof erpData]}).`
-    //         // );
-    //       }
-    //     });
-    //   } else {
-    //     // --- TRƯỜNG HỢP 3: data1 có mã và data2 có nhiều dòng khớp ---
-    //     const currentRowData = table1.getDataAtRow(i);
-    //     // console.log("currentRowData", currentRowData);
-    //     // console.log("matchingIndices.length;", matchingIndices.length);
-
-    //     if(currentRowData[1] != '-') {
-    //       for (let tmp_count = 0; tmp_count < matchingIndices.length - 2; tmp_count++) {
-    //         // currentRowData[1] = '-';
-    //         currentRowData.fill('-');
-    //         // console.log("currentRowData", currentRowData)
-    //         table1.alter("insert_row_below", i, 1); // Chèn 1 dòng trống dưới vị trí i
-    //         for (let col = 0; col < currentRowData.length; col++) {
-    //           table1.setDataAtCell(i+1, col, currentRowData[col]);
-    //         }
-    //       }
-  
-    //       const colIndex1 = propertyToColIndexTable1["soLuongTonDauKy"];
-    //       const colIndex2 = propertyToColIndexTable2["soLuongTonDauKy"];
-    
-    //       if (colIndex1 === undefined || colIndex2 === undefined) return;
-    
-    //       // Tính tổng soLuongTonDauKy từ tất cả các dòng khớp trong data2
-    //       const sumData2 = matchingIndices.reduce((sum, idx) => {
-    //         const value = sortedData2[idx].soLuongTonDauKy;
-            
-    //         if (typeof value === "number") {
-    //           return sum + value;
-    //         }
-    //         return sum; // Bỏ qua các giá trị không phải số
-    //       }, 0);
-    
-    //       // So sánh tổng soLuongTonDauKy từ data2 với giá trị trong data1
-    //       if (item.soLuongTonDauKy !== sumData2) {
-    //         table1.setCellMeta(i, colIndex1, "className", "red-cell");
-    //         matchingIndices.forEach((j) => {
-    //           table2.setCellMeta(j, colIndex2, "className", "red-cell");
-    //         });
-    
-    //         // console.error(
-    //         //   `Mã ${item.ma}: soLuongTonDauKy không khớp (data1: ${item.soLuongTonDauKy} vs data2 sum: ${sumData2}).`
-    //         // );
-    //       }
-    //     }
-          
-        
-    //     // console.log("table1", table1.getData())
-    //   }
-      
-    // });
-
   
     // Render lại 2 bảng để cập nhật giao diện
     table1.render();
     table2.render();
   };
+
+
   return (
     <>
       <Head>
@@ -638,6 +625,13 @@ export default function OrdersPage() {
             }}
           >
             <UploadButton content="EFFECT DATA" action={handleUploadA} />
+            <Button
+              startIcon={<CompareArrowsIcon />}
+              onClick={()=>{}}
+              variant="contained"
+            >
+              Filter
+            </Button>
             <Button
               startIcon={<CompareArrowsIcon />}
               onClick={compareData}
@@ -757,13 +751,12 @@ export default function OrdersPage() {
               licenseKey="non-commercial-and-evaluation"
               className="ht-theme-main" // Apply theme class here
               autoRowSize={true}
-              afterOnCellMouseDown={(event, coords) => 
-                {
-                  if (coords.row >= 0 && coords.col >= 0) {
-                    const selectedRow = data2[coords.row];
-                    setRowData(selectedRow);
-                    setDetailOpen(true);
-                  }
+              afterOnCellMouseDown={(event, coords) => {
+                if (coords.row >= 0 && coords.col >= 0) {
+                  const selectedRow = data2[coords.row];
+                  setRowData(selectedRow);
+                  setDetailOpen(true);
+                }
               }}
             ></HotTable>
           </Grid2>
