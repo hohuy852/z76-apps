@@ -816,32 +816,52 @@ export default function OrdersPage() {
       erpFilteredData,
     };
   }
-  const handleFilterData = () => {
+  const handleFilterData = (): void => {
     const table1 = hotTableRef1.current?.hotInstance;
     const table2 = hotTableRef2.current?.hotInstance;
-  
+
     if (!table1 || !table2) {
       console.error("Một hoặc cả hai hotInstance không khả dụng.");
       return;
     }
-  
-    // Tạo bản sao nếu cần tránh tác động phụ
-    const data1Copy = [...dataEffect];
+
+    // Tạo bản sao dữ liệu để tránh tác động phụ
     const data2Copy = [...dataErp];
-  
+    const data1Copy = [...dataEffect];
+
     const { effectFilteredData, resultMatched, erpFilteredData } = filterData(
       data1Copy,
       data2Copy
     );
-    // // Cập nhật state
-    // setEffectFilteredData(effectFilteredData);
-    // setResultMatched(resultMatched);
-    // setErpFilteredData(erpFilteredData);
-  
-    // Cập nhật Handsontable ngay lập tức
+    console.log("Filtered Data:", effectFilteredData, erpFilteredData);
+
     table1.loadData(effectFilteredData);
     table2.loadData(erpFilteredData);
   };
+
+  // const handleSwitchChange = (
+  //   event: React.ChangeEvent<HTMLInputElement>
+  // ): void => {
+  //   const isChecked = event.target.checked;
+  //   setHideIdenticalRows(isChecked);
+
+  //   const table1 = hotTableRef1.current?.hotInstance;
+  //   const table2 = hotTableRef2.current?.hotInstance;
+
+  //   if (!table1 || !table2) {
+  //     console.error("Một hoặc cả hai hotInstance không khả dụng.");
+  //     return;
+  //   }
+
+  //   if (isChecked) {
+  //     handleFilterData();
+  //   } else {
+  //     table1.loadData(effectData);
+  //     table2.loadData(erpData);
+  //   }
+  //   table1.render();
+  //   table2.render();
+  // };
   
   return (
     <>
