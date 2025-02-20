@@ -212,7 +212,7 @@ export default function OrdersPage() {
   const [approveOpen, setApproveOpen] = React.useState(false);
   const [rowData, setRowData] = React.useState<erpData | null>(null);
   // const [effectFilteredData, setEffectFilteredData] = React.useState<effectData[]>([]);
-  // const [resultMatched, setResultMatched] = React.useState<erpData[]>([]);
+  const [resultMatched, setResultMatched] = React.useState<erpData[]>([]);
   // const [erpFilteredData, setErpFilteredData] = React.useState<erpData[]>([]);
   const [hideIdenticalRows, setHideIdenticalRows] =
   React.useState<boolean>(false);
@@ -315,6 +315,7 @@ export default function OrdersPage() {
 
   const hotTableRef1 = React.useRef<HotTableRef>(null);
   const hotTableRef2 = React.useRef<HotTableRef>(null);
+  const hotTableRef3 = React.useRef<HotTableRef>(null);
 
   const compareData = (): void => {
     let startAll = performance.now();
@@ -846,11 +847,21 @@ export default function OrdersPage() {
       data2Copy
     );
     console.log("Filtered Data:", effectFilteredData, erpFilteredData);
-
     table1.loadData(effectFilteredData);
     table2.loadData(erpFilteredData);
   };
+  const handleApproval = (): void => {
+    setApproveOpen(true)
+    // Tạo bản sao dữ liệu để tránh tác động phụ
+    const data2Copy = [...dataErp];
+    const data1Copy = [...dataEffect];
 
+    const { resultMatched } = filterData(
+      data1Copy,
+      data2Copy
+    );
+    setResultMatched(resultMatched)
+  };
   const handleSwitchChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ): void => {
@@ -911,13 +922,6 @@ export default function OrdersPage() {
             <UploadButton content="EFFECT DATA" action={handleUploadA} />
             <Button
               startIcon={<CompareArrowsIcon />}
-              onClick={handleFilterData}
-              variant="contained"
-            >
-              Loc
-            </Button>
-            <Button
-              startIcon={<CompareArrowsIcon />}
               onClick={compareData}
               variant="contained"
             >
@@ -934,7 +938,7 @@ export default function OrdersPage() {
               </Button>
               <Button
                 startIcon={<CloudUploadIcon />}
-                onClick={() => setApproveOpen(true)}
+                onClick={handleApproval}
                 variant="contained"
               >
                 Duyệt thẻ kho
@@ -1243,13 +1247,14 @@ export default function OrdersPage() {
 
               <>
                 <HotTable
-                  data={dataErp}
+                  data={resultMatched}
+                  ref={hotTableRef3}
                   colWidths={[
                     100, 150, 203, 289, 150, 150, 150, 150, 150, 150, 150,
                   ]}
                   height="500"
                   width="100%"
-                  colHeaders={true}
+                  colHeaders={data.erpHeader}
                   contextMenu={[
                     "cut",
                     "copy",
@@ -1264,7 +1269,8 @@ export default function OrdersPage() {
                   ]}
                   dropdownMenu={true}
                   hiddenColumns={{
-                    indicators: true,
+                    columns: [9, 10],
+                    indicators: false,
                   }}
                   multiColumnSorting={true}
                   filters={true}
@@ -1280,15 +1286,6 @@ export default function OrdersPage() {
                   className="ht-theme-main"
                   autoRowSize={true}
                 >
-                  <HotColumn data={0} />
-                  <HotColumn data={1} />
-                  <HotColumn data={2} />
-                  <HotColumn data={3} />
-                  <HotColumn data={4} />
-                  <HotColumn data={5} />
-                  <HotColumn data={6} />
-                  <HotColumn data={7} />
-                  <HotColumn data={8} />
                 </HotTable>
               </>
             </div>
