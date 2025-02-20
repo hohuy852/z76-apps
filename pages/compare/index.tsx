@@ -23,6 +23,8 @@ import DatePicker from "@/components/DatePicker/DatePicker";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import "./style.css";
 import dayjs from "dayjs";
+import * as XLSX from 'xlsx';
+
 import { table } from "console";
 
 // register Handsontable's modules
@@ -59,154 +61,9 @@ interface erpData {
 }
 
 export default function OrdersPage() {
-  const dataEffect: effectData[] = [
-    {
-      ma: "SP001",
-      ten: "Sản phẩm A",
-      tenDonViTinh: "Cái",
-      soLuongTonDauKy: 110,
-      soLuongNhapKhoTrongKy: 50,
-      soLuongXuatKhoTrongKy: 30,
-      soLuongTonCuoiKy: 120,
-      soLuongNo: "",
-      trangThaiCheck: "unknown",
-    },
-    {
-      ma: "SP002",
-      ten: "Sản phẩm B",
-      tenDonViTinh: "Hộp",
-      soLuongTonDauKy: 410,
-      soLuongNhapKhoTrongKy: 80,
-      soLuongXuatKhoTrongKy: 60,
-      soLuongTonCuoiKy: 220,
-      soLuongNo: "",
-      trangThaiCheck: "unknown",
-    },
-    {
-      ma: "SP003",
-      ten: "Sản phẩm C",
-      tenDonViTinh: "Thùng",
-      soLuongTonDauKy: 50,
-      soLuongNhapKhoTrongKy: 20,
-      soLuongXuatKhoTrongKy: 10,
-      soLuongTonCuoiKy: 60,
-      soLuongNo: "",
-      trangThaiCheck: "unknown",
-    },
-    {
-      ma: "SP004",
-      ten: "Sản phẩm D",
-      tenDonViTinh: "Cái",
-      soLuongTonDauKy: 4,
-      soLuongNhapKhoTrongKy: 44,
-      soLuongXuatKhoTrongKy: 444,
-      soLuongTonCuoiKy: 4444,
-      soLuongNo: "",
-      trangThaiCheck: "unknown",
-    },
-  ];
-
-  // Dữ liệu mẫu cho erpData
-  const dataErp: erpData[] = [
-    {
-      idKho: 1,
-      tenKho: "Kho Chính",
-      ma: "SP001",
-      ten: "Sản phẩm A",
-      tenDonViTinh: "Cái",
-      soLuongTonDauKy: 110,
-      soLuongNhapKhoTrongKy: 50,
-      soLuongXuatKhoTrongKy: 30,
-      soLuongTonCuoiKy: 120,
-      chiTietNhapXuat: [
-        { ngay: "2024-02-01", soLuong: 10, loai: "Nhập" },
-        { ngay: "2024-02-05", soLuong: 5, loai: "Xuất" },
-      ],
-      trangThaiCheck: "unknown",
-    },
-    {
-      idKho: 2,
-      tenKho: "Kho Phụ",
-      ma: "SP002",
-      ten: "Sản phẩm B",
-      tenDonViTinh: "Hộp",
-      soLuongTonDauKy: 200,
-      soLuongNhapKhoTrongKy: 80,
-      soLuongXuatKhoTrongKy: 60,
-      soLuongTonCuoiKy: 220,
-      chiTietNhapXuat: [
-        { ngay: "2024-02-02", soLuong: 20, loai: "Nhập" },
-        { ngay: "2024-02-06", soLuong: 10, loai: "Xuất" },
-      ],
-      trangThaiCheck: "unknown",
-    },
-    {
-      idKho: 2,
-      tenKho: "Kho Phụ",
-      ma: "SP002",
-      ten: "Sản phẩm B",
-      tenDonViTinh: "Hộp",
-      soLuongTonDauKy: 200,
-      soLuongNhapKhoTrongKy: 80,
-      soLuongXuatKhoTrongKy: 60,
-      soLuongTonCuoiKy: 220,
-      chiTietNhapXuat: [
-        { ngay: "2024-02-02", soLuong: 20, loai: "Nhập" },
-        { ngay: "2024-02-06", soLuong: 10, loai: "Xuất" },
-      ],
-      trangThaiCheck: "unknown",
-    },
-    {
-      idKho: 1,
-      tenKho: "Kho Phụ",
-      ma: "SP003",
-      ten: "Sản phẩm C",
-      tenDonViTinh: "Hộp",
-      soLuongTonDauKy: 10,
-      soLuongNhapKhoTrongKy: 10,
-      soLuongXuatKhoTrongKy: 0,
-      soLuongTonCuoiKy: 0,
-      chiTietNhapXuat: [
-        { ngay: "2024-02-02", soLuong: 20, loai: "Nhập" },
-        { ngay: "2024-02-06", soLuong: 10, loai: "Xuất" },
-      ],
-      trangThaiCheck: "unknown",
-    },
-    {
-      idKho: 1,
-      tenKho: "Kho Chính",
-      ma: "SP002",
-      ten: "Sản phẩm B",
-      tenDonViTinh: "Hộp",
-      soLuongTonDauKy: 10,
-      soLuongNhapKhoTrongKy: 10,
-      soLuongXuatKhoTrongKy: 0,
-      soLuongTonCuoiKy: 0,
-      chiTietNhapXuat: [
-        { ngay: "2024-02-02", soLuong: 20, loai: "Nhập" },
-        { ngay: "2024-02-06", soLuong: 10, loai: "Xuất" },
-      ],
-      trangThaiCheck: "unknown",
-    },
-    {
-      idKho: 1,
-      tenKho: "Kho Chính",
-      ma: "SP005",
-      ten: "Sản phẩm B",
-      tenDonViTinh: "Hộp",
-      soLuongTonDauKy: 10,
-      soLuongNhapKhoTrongKy: 10,
-      soLuongXuatKhoTrongKy: 0,
-      soLuongTonCuoiKy: 0,
-      chiTietNhapXuat: [
-        { ngay: "2024-02-02", soLuong: 20, loai: "Nhập" },
-        { ngay: "2024-02-06", soLuong: 10, loai: "Xuất" },
-      ],
-      trangThaiCheck: "unknown",
-    },
-  ];
-  // const [effectData, setEffectData] = React.useState<(boolean | string | number)[][]>([]);
-  // const [erpData, seterpData] = React.useState<(boolean | string | number)[][]>([]);
+ 
+  const [effectData, setEffectData] = React.useState<effectData[]>([]);
+  const [erpData, setErpData] = React.useState<erpData[]>([]);
   const [open, setOpen] = React.useState(false);
   const [detailOpen, setDetailOpen] = React.useState(false);
   const [approveOpen, setApproveOpen] = React.useState(false);
@@ -227,8 +84,8 @@ export default function OrdersPage() {
     setLoading(true);
 
     try {
-      const vtId = [3];
-      const btpId = [4];
+      const vtId = [1,3,8,9];
+      const btpId = [4,5];
       console.log(startDate, endDate);
 
       // Hàm gọi API chung
@@ -258,29 +115,24 @@ export default function OrdersPage() {
       const vtpPromises = vtId.map((id) =>
         fetchFromAPI(id, "https://apilayoutkho.z76.vn/autobot/thekhovt")
       );
-      const btpPromises = btpId.map((id) =>
-        fetchFromAPI(id, "https://apilayoutkho.z76.vn/autobot/thekhobtp")
-      );
+      // const btpPromises = btpId.map((id) =>
+      //   fetchFromAPI(id, "https://apilayoutkho.z76.vn/autobot/thekhobtp")
+      // );
 
-      // Chờ tất cả API hoàn thành
       const vtpResults = await Promise.all(vtpPromises);
       console.log("Kết quả API 1:", vtpResults);
-      const btpResults = await Promise.all(btpPromises);
+      // const btpResults = await Promise.all(btpPromises);
+      // console.log("Kết quả API 2:", btpResults);
+  
+      // Gộp các kết quả từ 2 API (đã làm phẳng mảng nếu cần)
+      const allResults = [...vtpResults.flat()];
+  
+      // Chuyển đổi từng object, chuyển trường chiTietNhapXuat sang chuỗi JSON
+      const formattedData = allResults.map((item) => ({
+        ...item,
+      }));
 
-      // Gộp dữ liệu từ tất cả API lại thành 1 mảng
-      const allResults = [...vtpResults.flat(), ...btpResults.flat()];
-      const formattedData: any[][] = allResults.map((item) => {
-        // Chuyển đổi trường chiTietNhapXuat sang chuỗi JSON
-        const transformedItem = {
-          ...item,
-          chiTietNhapXuat: JSON.stringify(item.chiTietNhapXuat),
-        };
-
-        // Trả về một mảng chứa các giá trị của object đã chuyển đổi
-        return Object.values(transformedItem);
-      });
-
-      // seterpData(formattedData);
+      setErpData(formattedData);
       console.log("Dữ liệu sau khi gộp:", formattedData);
     } catch (error) {
       console.error("Lỗi khi gọi API:", error);
@@ -302,14 +154,53 @@ export default function OrdersPage() {
     handleClose();
   };
 
-  const handleUploadA = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUploadA = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
     const file = event.target.files?.[0];
-    if (file) {
-      try {
-        // console.log(formattedData);
-      } catch (error) {
-        console.error("Error uploading file A:", error);
+    if (!file) return;
+  
+    try {
+      // Đọc file dưới dạng ArrayBuffer
+      const arrayBuffer = await file.arrayBuffer();
+      // Đọc workbook từ ArrayBuffer
+      const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+      // Giả sử sử dụng sheet đầu tiên
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+  
+      // Lấy dữ liệu từ hàng 8 trở đi (skip 7 hàng đầu tiên)
+      // Sử dụng option { header: 1 } để trả về mảng các hàng (array of arrays)
+      const rows: any[][] = XLSX.utils.sheet_to_json(worksheet, {
+        header: 1,
+        range: 7, // Bắt đầu từ hàng thứ 8 (index 7, vì index bắt đầu từ 0)
+        defval: '' // Nếu ô trống, trả về chuỗi rỗng
+      });
+  
+      // Duyệt qua từng dòng và dừng lại nếu tìm thấy dòng có ma = "tổng cộng"
+      const effectDataArray: effectData[] = [];
+      for (const row of rows) {
+        // Kiểm tra nếu giá trị của cột đầu tiên (ma) là "tổng cộng"
+        if (row[1]?.toString().toLowerCase().trim() === "") {
+          break;
+        }
+        effectDataArray.push({
+          ma: row[0],
+          ten: row[1],
+          tenDonViTinh: row[2],
+          soLuongTonDauKy: row[3],
+          soLuongNhapKhoTrongKy: row[4],
+          soLuongXuatKhoTrongKy: row[5],
+          soLuongTonCuoiKy: row[6],
+          soLuongNo: row[7],
+          trangThaiCheck: "unknown" 
+        });
       }
+  
+      console.log("Parsed effectDataArray:", effectDataArray);
+      
+      // Ví dụ: cập nhật state hoặc xử lý dữ liệu sau khi parse
+      setEffectData(effectDataArray)
+    } catch (error) {
+      console.error("Error uploading file A:", error);
     }
   };
 
@@ -839,8 +730,8 @@ export default function OrdersPage() {
     }
 
     // Tạo bản sao dữ liệu để tránh tác động phụ
-    const data2Copy = [...dataErp];
-    const data1Copy = [...dataEffect];
+    const data2Copy = [...erpData];
+    const data1Copy = [...effectData];
 
     const { effectFilteredData, resultMatched, erpFilteredData } = filterData(
       data1Copy,
@@ -853,8 +744,8 @@ export default function OrdersPage() {
   const handleApproval = (): void => {
     setApproveOpen(true)
     // Tạo bản sao dữ liệu để tránh tác động phụ
-    const data2Copy = [...dataErp];
-    const data1Copy = [...dataEffect];
+    const data2Copy = [...erpData];
+    const data1Copy = [...effectData];
 
     const { resultMatched } = filterData(
       data1Copy,
@@ -879,8 +770,8 @@ export default function OrdersPage() {
     if (isChecked) {
       handleFilterData();
     } else {
-      table1.loadData(dataEffect);
-      table2.loadData(dataErp);
+      table1.loadData(effectData);
+      table2.loadData(erpData);
     }
     table1.render();
     table2.render();
@@ -897,10 +788,10 @@ export default function OrdersPage() {
     if (hideIdenticalRows) {
       handleFilterData();
     } else {
-      table1.loadData(dataEffect);
-      table2.loadData(dataErp);
+      table1.loadData(effectData);
+      table2.loadData(erpData);
     }
-  }, [hideIdenticalRows, dataEffect, dataErp]);
+  }, [hideIdenticalRows, effectData, erpData]);
   return (
     <>
       <Head>
@@ -962,7 +853,7 @@ export default function OrdersPage() {
         <Grid2 container size={12}>
           <Grid2 size="grow">
             <HotTable
-              data={dataEffect}
+              data={effectData}
               colWidths={[203, 289, 150, 150, 150, 150, 150, 150]}
               autoColumnSize
               height="100%"
@@ -1003,7 +894,7 @@ export default function OrdersPage() {
           </Grid2>
           <Grid2 size="grow">
             <HotTable
-              data={dataErp}
+              data={erpData}
               ref={hotTableRef2}
               colWidths={[
                 100, 150, 203, 289, 150, 150, 150, 150, 150, 150, 150,
@@ -1043,7 +934,7 @@ export default function OrdersPage() {
               autoRowSize={true}
               afterOnCellMouseDown={(event, coords) => {
                 if (coords.row >= 0 && coords.col >= 0) {
-                  const selectedRow = dataErp[coords.row];
+                  const selectedRow = erpData[coords.row];
                   setRowData(selectedRow);
                   setDetailOpen(true);
                 }
