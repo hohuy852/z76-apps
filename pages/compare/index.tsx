@@ -305,6 +305,8 @@ export default function OrdersPage() {
   const hotTableRef2 = React.useRef<HotTableRef>(null);
 
   const compareData = (): void => {
+    let startAll = performance.now();
+
     // Lấy instance của cả 2 bảng từ ref
     const table1 = hotTableRef1.current?.hotInstance;
     const table2 = hotTableRef2.current?.hotInstance;
@@ -578,6 +580,8 @@ export default function OrdersPage() {
     // Dữ liệu mẫu cho data1 và data2 đã được sắp xếp theo mã sản phẩm 'ma'
     const sortedData1 = data1.sort((a, b) => a.ma.localeCompare(b.ma));
     const sortedData2 = data2.sort((a, b) => a.ma.localeCompare(b.ma));
+    let start1 = performance.now();
+    const metaDataBackup1: (any)[] = []; // Mỗi phần tử có dạng: { row, col, key, value }
 
     sortedData1.forEach((item, item_idx) => {
       const dummyArr: (string | number | null)[] = [
@@ -591,25 +595,42 @@ export default function OrdersPage() {
         item.soLuongNo,
       ];
 
-      for (let col = 0; col < table1.countCols() - 2; col++) {
-        table1.setDataAtCell(item_idx, col, dummyArr[col]);
-        // Tất cả các cell được mark N/A đều tô đỏ
+      // Bảo Tín: Thực hiện bind giá trị dòng vào tableData, lưu thuộc tính bôi đỏ lại thành 1 mảng metaDataBackup rồi set 1 lượt (tránh gọi handsontable chọt từng ô bị chậm)
+      table1Data[item_idx] = dummyArr;
+
+      // Kiểm tra điều kiện và lưu metadata cần thiết vào metaDataBackup2
+      for (let col = 0; col < table1.countCols() - 1; col++) {
         if (item.trangThaiCheck === "fail") {
-          table1.setCellMeta(item_idx, col, "className", "red-cell");
-        } else if (item.trangThaiCheck == "unknown") {
-          //Do nothing
-        } else if (item.trangThaiCheck == "pass") {
-          //Do nothing
+          metaDataBackup1.push({ row: item_idx, col: col, key: "className", value: "red-cell" });
+        } else if (item.trangThaiCheck === "unknown") {
+          // Do nothing
+        } else if (item.trangThaiCheck === "pass") {
+          // Do nothing
         } else if (Array.isArray(item.trangThaiCheck)) {
-          if (col >= 3 && !item.trangThaiCheck[col - 3]) {
-            table1.setCellMeta(item_idx, col, "className", "red-cell");
+          // Bảo Tín: Xem lại dòng này vì sao phải trừ, vì em vừa sửa thành -3 thành -5, xem kết quả vẫn đúng đúng
+          if (col >= 5 && !item.trangThaiCheck[col - 5]) {
+            metaDataBackup1.push({ row: item_idx, col: col, key: "className", value: "red-cell" });
           }
         }
       }
     });
+    // Cập nhật dữ liệu mới cho Handsontable một lần
+    table1.updateSettings({
+      data: table1Data
+    });
+    // Sau khi load dữ liệu mới, áp dụng lại tất cả metadata đã lưu
+    metaDataBackup1.forEach(meta => {
+      table1.setCellMeta(meta.row, meta.col, meta.key, meta.value);
+    });
+    let end1 = performance.now();
+    console.log("Thời gian thực hiện sort 1: ", end1 - start1);
+    let start2 = performance.now();
+    
+    const metaDataBackup2: (any)[] = []; // Mỗi phần tử có dạng: { row, col, key, value }
 
     sortedData2.forEach((item, item_idx) => {
-      const dummyArr: (string | number | null)[] = [
+      // Tạo mảng dữ liệu cho hàng
+      const dummyArr = [
         item.idKho,
         item.tenKho,
         item.ma,
@@ -620,26 +641,42 @@ export default function OrdersPage() {
         item.soLuongXuatKhoTrongKy,
         item.soLuongTonCuoiKy,
       ];
+      // Bảo Tín: Thực hiện bind giá trị dòng vào tableData, lưu thuộc tính bôi đỏ lại thành 1 mảng metaDataBackup rồi set 1 lượt (tránh gọi handsontable chọt từng ô bị chậm)
 
-      for (let col = 0; col < table2.countCols() - 1; col++) {
-        table2.setDataAtCell(item_idx, col, dummyArr[col]);
+      table2Data[item_idx] = dummyArr;
+
+      // Kiểm tra điều kiện và lưu metadata cần thiết vào metaDataBackup2
+      for (let col = 0; col < table2.countCols(); col++) {
         if (item.trangThaiCheck === "fail") {
-          table2.setCellMeta(item_idx, col, "className", "red-cell");
-        } else if (item.trangThaiCheck == "unknown") {
-          //Do nothing
-        } else if (item.trangThaiCheck == "pass") {
-          //Do nothing
+          metaDataBackup2.push({ row: item_idx, col: col, key: "className", value: "red-cell" });
+        } else if (item.trangThaiCheck === "unknown") {
+          // Do nothing
+        } else if (item.trangThaiCheck === "pass") {
+          // Do nothing
         } else if (Array.isArray(item.trangThaiCheck)) {
           if (col >= 5 && !item.trangThaiCheck[col - 5]) {
-            table2.setCellMeta(item_idx, col, "className", "red-cell");
+            metaDataBackup2.push({ row: item_idx, col: col, key: "className", value: "red-cell" });
           }
         }
       }
     });
 
+    // Cập nhật dữ liệu mới cho Handsontable một lần
+    table2.updateSettings({
+      data: table2Data
+    });
+
+    // Sau khi load dữ liệu mới, áp dụng lại tất cả metadata đã lưu
+    metaDataBackup2.forEach(meta => {
+      table2.setCellMeta(meta.row, meta.col, meta.key, meta.value);
+    });
+    let end2 = performance.now();
+    console.log("Thời gian thực hiện sort 2: ", end2 - start2);
     // Render lại 2 bảng để cập nhật giao diện
     table1.render();
     table2.render();
+    let endAll = performance.now();
+    console.log("Thời gian thực hiện tất cả: ", endAll - startAll);
   };
 
   /**
