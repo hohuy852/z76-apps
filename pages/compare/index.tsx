@@ -1,5 +1,14 @@
 import * as React from "react";
-import { Grid2, Stack, Modal, Box, Typography } from "@mui/material";
+import {
+  Grid2,
+  Stack,
+  Modal,
+  Box,
+  Typography,
+  FormControlLabel,
+  Switch,
+  FormGroup,
+} from "@mui/material";
 import Button from "@mui/material/Button";
 import { HotTable, HotColumn, HotTableRef } from "@handsontable/react-wrapper";
 import { registerAllModules } from "handsontable/registry";
@@ -15,6 +24,7 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import "./style.css";
 import dayjs from "dayjs";
 import { table } from "console";
+
 // register Handsontable's modules
 registerAllModules();
 type status = "pass" | "fail" | "unknown";
@@ -204,6 +214,8 @@ export default function OrdersPage() {
   // const [effectFilteredData, setEffectFilteredData] = React.useState<effectData[]>([]);
   // const [resultMatched, setResultMatched] = React.useState<erpData[]>([]);
   // const [erpFilteredData, setErpFilteredData] = React.useState<erpData[]>([]);
+  const [hideIdenticalRows, setHideIdenticalRows] =
+  React.useState<boolean>(false);
   const [loading, setLoading] = React.useState(false);
   // Lấy ngày hiện tại làm giá trị mặc định
   const currentDate = dayjs().format("YYYY-MM-DD");
@@ -839,30 +851,45 @@ export default function OrdersPage() {
     table2.loadData(erpFilteredData);
   };
 
-  // const handleSwitchChange = (
-  //   event: React.ChangeEvent<HTMLInputElement>
-  // ): void => {
-  //   const isChecked = event.target.checked;
-  //   setHideIdenticalRows(isChecked);
+  const handleSwitchChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ): void => {
+    const isChecked = event.target.checked;
+    setHideIdenticalRows(isChecked);
 
-  //   const table1 = hotTableRef1.current?.hotInstance;
-  //   const table2 = hotTableRef2.current?.hotInstance;
+    const table1 = hotTableRef1.current?.hotInstance;
+    const table2 = hotTableRef2.current?.hotInstance;
 
-  //   if (!table1 || !table2) {
-  //     console.error("Một hoặc cả hai hotInstance không khả dụng.");
-  //     return;
-  //   }
+    if (!table1 || !table2) {
+      console.error("Một hoặc cả hai hotInstance không khả dụng.");
+      return;
+    }
 
-  //   if (isChecked) {
-  //     handleFilterData();
-  //   } else {
-  //     table1.loadData(effectData);
-  //     table2.loadData(erpData);
-  //   }
-  //   table1.render();
-  //   table2.render();
-  // };
-  
+    if (isChecked) {
+      handleFilterData();
+    } else {
+      table1.loadData(dataEffect);
+      table2.loadData(dataErp);
+    }
+    table1.render();
+    table2.render();
+  };
+  React.useEffect(() => {
+    const table1 = hotTableRef1.current?.hotInstance;
+    const table2 = hotTableRef2.current?.hotInstance;
+
+    if (!table1 || !table2) {
+      console.error("Một hoặc cả hai hotInstance không khả dụng.");
+      return;
+    }
+
+    if (hideIdenticalRows) {
+      handleFilterData();
+    } else {
+      table1.loadData(dataEffect);
+      table2.loadData(dataErp);
+    }
+  }, [hideIdenticalRows, dataEffect, dataErp]);
   return (
     <>
       <Head>
@@ -915,7 +942,7 @@ export default function OrdersPage() {
             </Stack>
           </Stack>
         </Grid2>
-        {/* <Grid2 size={12}>
+        <Grid2 size={12}>
           <FormGroup style={{ width: "fit-content" }}>
             <FormControlLabel
               control={
@@ -927,7 +954,7 @@ export default function OrdersPage() {
               label="Ẩn các hàng giống nhau"
             />
           </FormGroup>
-        </Grid2> */}
+        </Grid2>
         <Grid2 container size={12}>
           <Grid2 size="grow">
             <HotTable
